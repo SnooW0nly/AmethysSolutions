@@ -1,0 +1,9 @@
+{
+  "roblox_auto": {
+    "active": true,
+    "permanent": true,
+    "activated_at": "2025-06-05T00:00:00.000000",
+    "payment_id": "roblox_auto-123456789-abc12345",
+    "payments": ["roblox_auto-123456789-abc12345"]
+  }
+}

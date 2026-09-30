@@ -1,0 +1,18 @@
+{
+    "botID": "",
+    "botToken": "",
+    "apiURL": "",
+    "version": "BETA",
+    "syncEmojis": true,
+    "saveConfig": false,
+    "startOnBackup": true,
+    "bot": {
+        "token": "",
+        "owner": "",
+        "id": "",
+        "perms": [
+            ""
+        ],
+        "server": ""
+    }
+}

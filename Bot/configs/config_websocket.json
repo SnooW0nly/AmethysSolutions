@@ -1,0 +1,23 @@
+{
+    "websocket_cloud": {
+        "server_url": "https://amethyscloud.stackr.lat",
+        "http_url": "https://amethyscloud.stackr.lat",
+        "reconnect_interval": 5,
+        "auto_start": true
+    },
+    "websocket_manager": {
+        "server_url": "https://amethysapi.stackr.lat",
+        "reconnect_interval": 5,
+        "auto_start": true
+    },
+    "websocket_boost": {
+        "server_url": "https://amethysboost.stackr.lat",
+        "reconnect_interval": 5,
+        "auto_start": true
+    },
+    "websocket_partnership": {
+        "server_url": "https://amethysparceria.stackr.lat",
+        "reconnect_interval": 5,
+        "auto_start": true
+    }
+}

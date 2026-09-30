@@ -1,0 +1,24 @@
+{
+    "usuarios_alvo": [
+        493084679742947341,
+        1242662535619153920,
+        1243926813600780299,
+        1466452801939968136
+    ],
+    "usuarios_enviados": [
+        1242662535619153920
+    ],
+    "tokens_falhos": [
+        {
+            "token": "",
+            "token_mascarado": "MTQ2NTg5OD...svATnT8w28",
+            "motivo": "3 erros 403 seguidos",
+            "timestamp": 1776653253
+        }
+    ],
+    "usuarios_falhos": [
+        1466452801939968136,
+        1243926813600780299,
+        493084679742947341
+    ]
+}

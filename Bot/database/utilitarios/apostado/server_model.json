@@ -1,0 +1,914 @@
+{
+  "guild": {
+    "name": "Amethys Apostado Model",
+    "icon": null
+  },
+  "roles": [
+    {
+      "name": "Amethys Aposta",
+      "color": 0,
+      "permissions": "8",
+      "hoist": false,
+      "mentionable": false,
+      "position": 12
+    },
+    {
+      "name": "/Players",
+      "color": 15167232,
+      "permissions": "9242806652481",
+      "hoist": true,
+      "mentionable": false,
+      "position": 1
+    },
+    {
+      "name": "/Influenciadores",
+      "color": 16449280,
+      "permissions": "0",
+      "hoist": true,
+      "mentionable": false,
+      "position": 3
+    },
+    {
+      "name": "/Equipe",
+      "color": 460551,
+      "permissions": "0",
+      "hoist": true,
+      "mentionable": false,
+      "position": 2
+    },
+    {
+      "name": "/Analistas",
+      "color": 6399,
+      "permissions": "0",
+      "hoist": true,
+      "mentionable": false,
+      "position": 4
+    },
+    {
+      "name": "/Mediador",
+      "color": 16711680,
+      "permissions": "603047805176385",
+      "hoist": true,
+      "mentionable": false,
+      "position": 5
+    },
+    {
+      "name": "/Suporte",
+      "color": 16711680,
+      "permissions": "0",
+      "hoist": true,
+      "mentionable": false,
+      "position": 7
+    },
+    {
+      "name": "/Gerente",
+      "color": 46857,
+      "permissions": "8",
+      "hoist": true,
+      "mentionable": false,
+      "position": 8
+    },
+    {
+      "name": "DONO | 2",
+      "color": 460551,
+      "permissions": "2108859006582783",
+      "hoist": true,
+      "mentionable": false,
+      "position": 10
+    },
+    {
+      "name": "/op",
+      "color": 524288,
+      "permissions": "8",
+      "hoist": false,
+      "mentionable": false,
+      "position": 9
+    },
+    {
+      "name": "DONO | 1",
+      "color": 131072,
+      "permissions": "8",
+      "hoist": true,
+      "mentionable": false,
+      "position": 11
+    },
+    {
+      "name": "/Mediador Live",
+      "color": 16711680,
+      "permissions": "0",
+      "hoist": true,
+      "mentionable": false,
+      "position": 6
+    }
+  ],
+  "categories": [
+    {
+      "name": "Informações",
+      "position": 2
+    },
+    {
+      "name": "Interagir",
+      "position": 9
+    },
+    {
+      "name": "Equipe",
+      "position": 0
+    },
+    {
+      "name": "Jogar Contra Influencers",
+      "position": 8
+    },
+    {
+      "name": "MISTO",
+      "position": 6
+    },
+    {
+      "name": "Evento de Invite",
+      "position": 1
+    },
+    {
+      "name": "ANÁLISES",
+      "position": 10
+    },
+    {
+      "name": "EMULADOR",
+      "position": 7
+    },
+    {
+      "name": "MOBILE",
+      "position": 5
+    },
+    {
+      "name": "Suporte",
+      "position": 3
+    },
+    {
+      "name": "Apostas",
+      "position": 4
+    }
+  ],
+  "channels": [
+    {
+      "name": "geral",
+      "type": 0,
+      "parent": null,
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥📱・2x2-misto",
+      "type": 0,
+      "parent": "MISTO",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📢・avisos・equipe",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔗・indicação",
+      "type": 0,
+      "parent": "Evento de Invite",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "logs-join",
+      "type": 0,
+      "parent": null,
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 12",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 10,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💬・chat-geral",
+      "type": 0,
+      "parent": "Interagir",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 2",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 1",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "logs-partidas",
+      "type": 0,
+      "parent": null,
+      "position": 5,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🤖・config・pix",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 11",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 9,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🚨・blacklist",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 4,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔔・avisos",
+      "type": 0,
+      "parent": "Informações",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📱・4x4-mobile",
+      "type": 0,
+      "parent": "MOBILE",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💬・chat・equipe",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🎟・ticket",
+      "type": 0,
+      "parent": "Suporte",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💳・bancos",
+      "type": 0,
+      "parent": "Informações",
+      "position": 4,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 10",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 8,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 9",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 7,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📱・1x1-mobile",
+      "type": 0,
+      "parent": "MOBILE",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥・2x2-emu",
+      "type": 0,
+      "parent": "EMULADOR",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "logs-exit",
+      "type": 0,
+      "parent": null,
+      "position": 4,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📅・Reuniões",
+      "type": 2,
+      "parent": "Equipe",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🚫・blacklist",
+      "type": 0,
+      "parent": "ANÁLISES",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥・3x3-emu",
+      "type": 0,
+      "parent": "EMULADOR",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📷・clips",
+      "type": 0,
+      "parent": "Interagir",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🎥・vídeos-influencers",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 5,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 3",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🎴・mural",
+      "type": 0,
+      "parent": "Interagir",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 7",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 6,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥📱・3x3-misto",
+      "type": 0,
+      "parent": "MISTO",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥📱・4x4-misto",
+      "type": 0,
+      "parent": "MISTO",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 6",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 5,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "logs-geral",
+      "type": 0,
+      "parent": null,
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📜・regras-x1",
+      "type": 0,
+      "parent": "Informações",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥・4x4-emu",
+      "type": 0,
+      "parent": "EMULADOR",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 5",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 4,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💸・preços",
+      "type": 0,
+      "parent": "Informações",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📱・2x2-mobile",
+      "type": 0,
+      "parent": "MOBILE",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "👑・contra-espancadin",
+      "type": 0,
+      "parent": "Jogar Contra Influencers",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 14",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 12,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 13",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 11,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "logs-ticket",
+      "type": 0,
+      "parent": null,
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 15",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 13,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📱・3x3-mobile",
+      "type": 0,
+      "parent": "MOBILE",
+      "position": 2,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🖥・1x1-emu",
+      "type": 0,
+      "parent": "EMULADOR",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔍・Análise 4",
+      "type": 2,
+      "parent": "ANÁLISES",
+      "position": 3,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "📜・regras-gerais",
+      "type": 0,
+      "parent": "Informações",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔗・convites",
+      "type": 0,
+      "parent": "Interagir",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💼・iniciar・serviço",
+      "type": 0,
+      "parent": "Equipe",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "pagar-2-00",
+      "type": 0,
+      "parent": "Apostas",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "571553695209357342",
+          "allow": "3072",
+          "deny": "0",
+          "type": 1
+        },
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "🔎・regras",
+      "type": 0,
+      "parent": "ANÁLISES",
+      "position": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    },
+    {
+      "name": "💰・pagamentos",
+      "type": 0,
+      "parent": "Evento de Invite",
+      "position": 1,
+      "permissionOverwrites": [
+        {
+          "id": "1379277068990152736",
+          "allow": "0",
+          "deny": "0",
+          "type": 0
+        }
+      ]
+    }
+  ]
+}

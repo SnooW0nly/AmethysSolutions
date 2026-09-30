@@ -1,0 +1,4 @@
+{
+  "plan_type": "premium",
+  "allowed_providers": ["sync_wallet", "mercado_pago", "efibank", "pushinpay", "misticpay", "pix_manual"]
+}

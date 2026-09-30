@@ -1,0 +1,20 @@
+{
+    "ativado": false,
+    "tokens": [],
+    "mensagem": {
+        "content": "# __Amethys [`Solutions`]__\n## - Amethys , o bot perfeito para o seu servidor ! \n> **Nosso bot [`Amethys Pro`] possui todos os módulos abaixo e muito mais:**\n-# ~~                                                                                                                 ~~\n[・ Cloud;](https://discord.gg/amethysolutions)                       [・Tools;](https://discord.gg/amethysolutions)\n[・Ticket;](https://discord.gg/amethysolutions)                       [・Extensão;](https://discord.gg/amethysolutions)  \n[・ Proteção;](https://discord.gg/amethysolutions)                [・Moderação;](https://discord.gg/amethysolutions) \n[・CymAI;](https://discord.gg/amethysolutions)                      [・Automações;](https://discord.gg/amethysolutions)\n[・Apostado;](https://discord.gg/amethysolutions)                [・Roblox;](https://discord.gg/amethysolutions) \n[・Vendas;](https://discord.gg/amethysolutions)                     [・Vendas em Site;](https://amthys.shop)\n# __Somente na [`Amethys`] __\n> **Caso queira o bot da [`Amethys Pro`] Basta entrar no servidor abaixo e ir em https://amethys.solutions/pricing e selecionar [`Escolher Plano`] e ser levado para o pagamento e a entrega do bot**                        \n## - Amethys Pro | [`R$6,99`] __Mensal__ \n-# https://discord.gg/amethysolutions",
+        "botoes": [
+            {
+                "id": "1a6be436-7b1a-4487-83fc-0b0ce18ffdaf",
+                "label": "Amethys Solutions",
+                "button": {
+                    "type": "url",
+                    "emoji": null,
+                    "url": "https://discord.gg/amethysolutions",
+                    "style": "url",
+                    "disabled": false
+                }
+            }
+        ]
+    }
+}

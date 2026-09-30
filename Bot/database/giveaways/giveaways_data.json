@@ -1,0 +1,66 @@
+{
+    "MDaxrGGby0": {
+        "name": "U",
+        "mode": "real",
+        "author_id": 1466452801939968136,
+        "created_at": 1776009067,
+        "monitor_enabled": false,
+        "tasks": [
+            {
+                "id": "wpTjRC",
+                "name": "O",
+                "status": "pending",
+                "author_id": 1466452801939968136,
+                "created_at": 1776009195
+            }
+        ],
+        "rifa": {
+            "enabled": true,
+            "ticket_price": 5.0,
+            "max_tickets": 100,
+            "tickets_per_user": 1
+        },
+        "embed": {
+            "title": "Oi",
+            "description": "Bdhdhs"
+        },
+        "button": {
+            "label": "Ísis",
+            "emoji": "",
+            "style": "green"
+        }
+    },
+    "XXWjs720bQ": {
+        "name": "ter",
+        "mode": "real",
+        "author_id": 1374911691984470109,
+        "created_at": 1776649906,
+        "log_channel_id": 1493673278378610759,
+        "embed": {
+            "title": "sou",
+            "description": "Leuegay"
+        },
+        "button": {
+            "label": "Participar",
+            "emoji": "",
+            "style": "green"
+        },
+        "rifa": {
+            "enabled": true,
+            "ticket_price": 5.0,
+            "max_tickets": 100,
+            "tickets_per_user": 1
+        },
+        "tasks": [
+            {
+                "id": "gF6oPl",
+                "name": "oi",
+                "status": "running",
+                "author_id": 1242662535619153920,
+                "created_at": 1777147907,
+                "channel_id": 1493673278378610759,
+                "message_id": 1497691667849941104
+            }
+        ]
+    }
+}

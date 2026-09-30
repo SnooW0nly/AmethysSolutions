@@ -1,0 +1,39 @@
+[
+  {
+    "id": "006332756bb4",
+    "bot_id": "1495086105345921147",
+    "members_count": 15,
+    "max_uses": 1,
+    "used_count": 0,
+    "status": "active",
+    "created_by": "",
+    "created_at": "2026-04-23T20:23:20.265794Z",
+    "updated_at": "0001-01-01T00:00:00Z",
+    "last_used": "0001-01-01T00:00:00Z"
+  },
+  {
+    "id": "9b3b0bc34801",
+    "bot_id": "1495086105345921147",
+    "members_count": 14,
+    "max_uses": 1,
+    "used_count": 1,
+    "status": "used",
+    "created_by": "",
+    "created_at": "2026-04-25T19:02:10.253194Z",
+    "updated_at": "0001-01-01T00:00:00Z",
+    "last_used": "2026-04-25T19:02:44.710619636Z",
+    "last_guild_id": "1482850030132924561"
+  },
+  {
+    "id": "693612691e90",
+    "bot_id": "1492947535827042405",
+    "members_count": 6,
+    "max_uses": 1,
+    "used_count": 0,
+    "status": "active",
+    "created_by": "",
+    "created_at": "2026-05-03T12:54:45.010906Z",
+    "updated_at": "0001-01-01T00:00:00Z",
+    "last_used": "0001-01-01T00:00:00Z"
+  }
+]

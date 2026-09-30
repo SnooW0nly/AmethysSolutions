@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "email_destino": "snoowonly@gmail.com",
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "smtp_user": "amethysapplications@gmail.com",
+  "smtp_pass": "slhh dtuf wyqo edwu",
+  "use_tls": true
+}

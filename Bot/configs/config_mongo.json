@@ -1,0 +1,4 @@
+{
+    "mongoURL": "mongodb://stackr_a8c5d2bb:a2fd0fa36dbadeb3a4e8a043388c7b94@173.249.26.179:36642/amethysbots?authSource=admin",
+    "databaseName": "amethys_bots"
+}

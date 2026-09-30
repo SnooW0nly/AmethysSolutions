@@ -1,0 +1,14 @@
+{
+    "api": "https://amethyspayments.stackr.lat",
+    "payments": "https://amethyspayments.stackr.lat",
+    "cloud": "https://amethyscloud.stackr.lat",
+    "transcripts": "https://amethysapi.stackr.lat",
+    "transcript_api_key": "amotantoalilimeodeod",
+    "ia": "https://apicym.stackr.lat",
+    "tools": "https://amethystools.stackr.lat",
+    "parcerias": "https://amethysparceria.stackr.lat",
+    "music": "https://amethysmusic.stackr.lat",
+    "marketplace": "http://localhost:3001",
+    "marketplace_secret": "change-me-in-production",
+    "middleman": "https://amethysdenuncias.stackr.lat"
+}

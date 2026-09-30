@@ -1,0 +1,30 @@
+{
+    "definitions": {
+        "require_oauth2": {
+            "enabled": false
+        },
+        "sync_oauth2": {
+            "enabled": false
+        },
+        "auto_join_oauth2": {
+            "enabled": false
+        }
+    },
+    "log_channel_id": "",
+    "message_verify": {
+        "message_style": "container",
+        "button": {
+            "label": "",
+            "emoji": "",
+            "style": "grey"
+        },
+        "container": {
+            "content": ""
+        }
+    },
+    "client_id": "",
+    "client_secret": "",
+    "token": "",
+    "name": "",
+    "main_server_id": ""
+}
