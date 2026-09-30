@@ -1,0 +1,40 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node -r dotenv/config server.js",
+    "dev": "node --watch -r dotenv/config server.js",
+    "prod": "NODE_ENV=production node -r dotenv/config server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "validate": "node -e \"require('./src/config/security.js').validateEnvironment()\"",
+    "generate-secret": "node -e \"console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "bson": "^7.3.1",
+    "cheerio": "^1.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "discloud.app": "^1.2.0",
+    "discord.js": "^14.23.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "form-data": "^4.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "mongoose": "^8.17.1",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^8.0.10",
+    "qrcode": "^1.5.4",
+    "unzipper": "^0.10.14",
+    "uuid": "^11.0.3"
+  }
+}

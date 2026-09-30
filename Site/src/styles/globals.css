@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.js";
+
+/* ─── Chatbot: destaque do elemento alvo ──────────────────────────────────── */
+
+.chatbot-highlight {
+  outline: 2.5px solid rgba(139, 92, 246, 0.9) !important;
+  outline-offset: 4px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2), 0 0 24px rgba(139, 92, 246, 0.4) !important;
+  animation: chatbot-pulse-ring 0.55s ease-in-out 3 !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+@keyframes chatbot-pulse-ring {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2), 0 0 24px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 8px rgba(139, 92, 246, 0.15), 0 0 40px rgba(139, 92, 246, 0.5);
+  }
+}

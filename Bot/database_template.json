@@ -1,0 +1,625 @@
+{
+  "automations_ai_chat": {
+    "ativado": false,
+    "chats": {},
+    "cargo_imune_id": null
+  },
+  "automations_ai_moderator": {
+    "ativado": false,
+    "cargo_imune_id": null,
+    "prompt": null,
+    "rejection_message": "Sua mensagem foi removida por violar as TOS do Discord."
+  },
+  "automations_boas_vindas": {
+    "ativado": false,
+    "mensagem": "Bem-vindo {user} ao {nameserver}! Agora somos {servercount}.",
+    "tempo_segundos": 0,
+    "modo_envio": "v2",
+    "rota_envio": "canal",
+    "usar_componentes_v2": true,
+    "v1_imagem_url": null,
+    "v2_imagem_url": null,
+    "v2_cor_container": null,
+    "embed_titulo": null,
+    "embed_banner_url": null,
+    "embed_thumb_url": null,
+    "embed_cor": null
+  },
+  "automations_clean": {
+    "ativado": false,
+    "canais": {},
+    "logs_ativados": false
+  },
+  "automations_cont_members": {
+    "ativado": false,
+    "contadores": [],
+    "estilo": 0
+  },
+  "automations_cont_members_call": {
+    "ativado": false,
+    "contadores": [],
+    "estilo": 0
+  },
+  "automations_feedbacks": {
+    "ativado": false
+  },
+  "automations_feedbacks_log": {},
+  "automations_invite_tracker": {
+    "ativado": false,
+    "channel_id": null,
+    "welcome_message": "Seja bem-vindo(a) {member}! Você foi convidado(a) por {inviter} que agora possui {invites} convites válidos.",
+    "leave_message": "Que pena, {member} nos deixou. Ele(a) foi convidado(a) por {inviter} que agora possui {invites} convites válidos."
+  },
+  "automations_lock_unlock": {
+    "ativado": false,
+    "canais": {},
+    "logs_ativados": false
+  },
+  "automations_msg_auto": {
+    "ativado": false,
+    "mensagens": {}
+  },
+  "automations_nuke": {
+    "ativado": false,
+    "canais": {},
+    "logs_ativados": false
+  },
+  "automations_repost": {
+    "ativado": false,
+    "intervalo_horas": 24,
+    "proxima_repostagem": null,
+    "logs_ativados": false
+  },
+  "automations_reactions": {
+    "status": false,
+    "reactions": []
+  },
+  "automations_response_auto": {
+    "status": false,
+    "responses": []
+  },
+  "automations_suggestions": {
+    "status": false,
+    "channel": null,
+    "sugestoes": {},
+    "immune_role_id": null,
+    "create_threads": true,
+    "thread_message": "{user}, este tópico foi criado para discutir a sua sugestão.",
+    "auto_moderation": {
+      "enabled": false,
+      "mode": "porcentagem",
+      "approval_threshold": 60,
+      "rejection_threshold": 40,
+      "approval_delay_hours": 24
+    }
+  },
+  "automations_topics": {
+    "ativado": false,
+    "topicos": [],
+    "immune_role_id": null
+  },
+  "canais": {
+    "canal_de_evento_de_compras": null,
+    "canal_de_boas_vindas": null,
+    "canal_de_logs_do_sistema": null,
+    "canal_de_logs_de_entradas": null,
+    "canal_de_logs_de_saidas": null,
+    "canal_de_logs_de_mensagens": null,
+    "canal_de_logs_de_trafego_em_call": null,
+    "canal_de_logs_de_pedidos": null,
+    "canal_de_feedback": null,
+    "canal_de_logs_de_tickets": null,
+    "canal_de_logs_de_comandos": null,
+    "canal_de_logs_de_anti_falso": null,
+    "canal_de_logs_de_banimentos": null,
+    "canal_de_logs_de_expulsoes": null,
+    "canal_de_logs_de_castigos": null,
+    "canal_de_logs_de_cargos_adicionados": null,
+    "canal_de_logs_de_cargos_removidos": null,
+    "canal_de_logs_de_cargos_criados": null,
+    "canal_de_logs_de_cargos_excluidos": null,
+    "canal_de_logs_de_cargos_editados": null,
+    "canal_de_logs_de_canais_criados": null,
+    "canal_de_logs_de_canais_excluidos": null,
+    "canal_de_logs_de_canais_editados": null,
+    "canal_de_logs_de_permissoes_adicionadas": null,
+    "canal_de_logs_de_permissoes_removidas": null
+  },
+  "cargos": {
+    "cargo_admin": null,
+    "cargo_suporte": null,
+    "cargo_cliente": null,
+    "cargo_verificado": null,
+    "cargo_auto_role": null
+  },
+  "convites": {},
+  "custom_colors": {
+    "primary": "#ffffff",
+    "secondary": "#6c757d",
+    "success": "#28a745",
+    "danger": "#dc3545",
+    "warning": "#ffc107"
+  },
+  "custom_mode": {
+    "mode": "components"
+  },
+  "custom_status": {
+    "type": "online",
+    "names": [
+      "Powered by AmethysApps"
+    ]
+  },
+  "messages_anunciar": {
+    "configured": false,
+    "is_v2_component": false,
+    "message": {
+      "content": null,
+      "container": null,
+      "embed": {
+        "title": null,
+        "description": null,
+        "color": null,
+        "footer": null,
+        "banner": null,
+        "thumbnail": null
+      },
+      "externalImage": null,
+      "buttons": []
+    }
+  },
+  "messages_templates1": {
+    "templates": []
+  },
+  "protection_privatizacoes_apps": {
+    "privatizacao_apps": {
+      "ativado": false
+    },
+    "privatizacao_apps_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_privatizacoes_cargos": {
+    "privatizacao_cargos": {
+      "ativado": false
+    },
+    "privatizacao_cargos_avancado": {
+      "punicao": "none",
+      "cargos_privados": [],
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_privatizacoes_mencoes": {
+    "privatizacao_mencoes": {
+      "ativado": false
+    },
+    "privatizacao_mencoes_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_privatizacoes_perms": {
+    "privatizacao_permissoes": {
+      "ativado": false
+    },
+    "privatizacao_permissoes_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_privatizacoes_persistencia": {
+    "persistencia_canais": {
+      "ativado": false
+    },
+    "persistencia_canais_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "categorias_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_privatizacoes_urls": {
+    "privatizacao_urls": {
+      "ativado": false
+    },
+    "privatizacao_urls_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_banimentos": {
+    "banimento": {
+      "limite": 2,
+      "intervalo": 10,
+      "ativado": false
+    },
+    "banimentos_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_canais": {
+    "criacao": {
+      "limite": 3,
+      "intervalo": 10,
+      "ativado": false
+    },
+    "edicao": {
+      "limite": 5,
+      "intervalo": 15,
+      "ativado": false
+    },
+    "exclusao": {
+      "limite": 2,
+      "intervalo": 5,
+      "ativado": false
+    },
+    "canais_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "categorias_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_cargos": {
+    "criacao": {
+      "limite": 3,
+      "intervalo": 10,
+      "ativado": false
+    },
+    "edicao": {
+      "limite": 5,
+      "intervalo": 15,
+      "ativado": false
+    },
+    "exclusao": {
+      "limite": 2,
+      "intervalo": 5,
+      "ativado": false
+    },
+    "cargos_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_comandosext": {
+    "comandosext": {
+      "limite": 5,
+      "intervalo": 15,
+      "ativado": false
+    },
+    "comandosext_avancado": {
+      "punicao": "none",
+      "bots_permitidos": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_expulsoes": {
+    "expulsoes": {
+      "limite": 3,
+      "intervalo": 10,
+      "ativado": false
+    },
+    "expulsoes_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "protection_protecaogeral_webhooks": {
+    "webhooks": {
+      "limite": 2,
+      "intervalo": 5,
+      "ativado": false
+    },
+    "webhooks_avancado": {
+      "punicao": "none",
+      "cargos_imunes": [],
+      "canal_logs": null
+    }
+  },
+  "loja_stock_notifications": {
+    "notifications": {}
+  },
+  "loja_buys": {
+    "purchases": {}
+  },
+  "loja_customers": {
+    "customers": {},
+    "decorations": {
+      "roles": []
+    },
+    "settings": {
+      "auto_role": true,
+      "base_role": null
+    }
+  },
+  "loja_data": {
+    "carts": {}
+  },
+  "loja_maintenance": {
+    "enabled": false,
+    "message": "Olá, {user} a loja está em manutenção, tente novamente mais tarde.",
+    "allow_admins": true
+  },
+  "loja_preferences": {
+    "cart_duration_minutes": 30,
+    "transcript_enabled": false,
+    "transcript_channel_id": null,
+    "office_hours": {
+      "enabled": false,
+      "start_time": "",
+      "end_time": "",
+      "off_days": [],
+      "message": ""
+    },
+    "stock_requests": {
+      "enabled": false,
+      "channel_id": null,
+      "role_id": null
+    },
+    "terms": {
+      "enabled": false,
+      "text": ""
+    }
+  },
+  "loja_stock_requests": {
+    "requests": {}
+  },
+  "loja_doubt_button": {
+    "enabled": false,
+    "button_label": "Dúvidas",
+    "button_emoji": "❓",
+    "channel_id": null,
+    "message": "Olá! Se você tem dúvidas sobre nossos produtos, entre em contato conosco!"
+  },
+  "loja_mass_coupons": {
+    "coupons": {}
+  },
+  "loja_roles_temp": {},
+  "loja_saldo_config": {
+    "enabled": false,
+    "bonus": {
+      "type": "disabled",
+      "value": 0
+    },
+    "rules": {
+      "max_usage_percentage": 100,
+      "max_usage_amount": null,
+      "min_usage_amount": 0,
+      "allow_partial_payment": true
+    },
+    "deposit_panel": {
+      "message_style": "embed",
+      "embed": {
+        "title": "Depositar Saldo",
+        "description": "Clique no botão abaixo para fazer um depósito de saldo.",
+        "color": "#5c5ef0",
+        "image_url": null,
+        "thumbnail_url": null
+      },
+      "content": {
+        "content": "Clique no botão abaixo para fazer um depósito de saldo.",
+        "image_url": null
+      },
+      "container": {
+        "content": "Clique no botão abaixo para fazer um depósito de saldo.",
+        "color": "#5c5ef0",
+        "image_url": null,
+        "thumbnail_url": null
+      },
+      "button": {
+        "label": "Depositar",
+        "emoji": null,
+        "style": "green"
+      },
+      "channel_id": null,
+      "message_id": null,
+      "category_id": null
+    },
+    "deposit_settings": {
+      "min_deposit": 5.00,
+      "max_deposit": 1000.00,
+      "terms": null,
+      "notify_role_id": null
+    }
+  },
+  "loja_saldo_users": {
+    "users": {}
+  },
+  "loja_saldo_deposits": {
+    "deposits": {}
+  },
+  "loja_products": {},
+  "products": {},
+  "products_preferences": {
+    "show_description": true,
+    "show_sales_count": false,
+    "button_text": "Comprar",
+    "button_emoji": "🛒"
+  },
+  "loja_qr_customization": {
+    "enabled": true,
+    "color": "#000000",
+    "background_color": "#FFFFFF",
+    "logo_url": null,
+    "logo_size": 0.3,
+    "corner_style": "square",
+    "dot_style": "square"
+  },
+  "loja_personalization": {
+    "purchase_event": {
+      "message": null,
+      "color": null,
+      "image": null,
+      "show_user": true,
+      "show_quantity": true,
+      "show_price": true
+    },
+    "feedback_incentive": {
+      "message": null,
+      "button_text": "Deixar Avaliação"
+    }
+  },
+  "payment_configs": {
+    "mercado_pago": {
+      "enabled": false,
+      "access_token": null
+    },
+    "efibank": {
+      "enabled": false,
+      "client_id": null,
+      "client_secret": null,
+      "pix_key": null,
+      "cert_file": null
+    },
+    "pagbank": {
+      "enabled": false,
+      "token_pagbank": null
+    },
+    "picpay": {
+      "enabled": false,
+      "token_picpay": null
+    },
+    "pushinpay": {
+      "enabled": false,
+      "token_pushinpay": null
+    },
+    "stripe": {
+      "enabled": false,
+      "token_stripe": null
+    },
+    "paypal": {
+      "enabled": false,
+      "client_id": null,
+      "client_secret": null
+    },
+    "asaas": {
+      "enabled": false,
+      "token_asaas": null
+    },
+    "coinbase": {
+      "enabled": false,
+      "token_coinbase": null
+    },
+    "nowpayments": {
+      "enabled": false,
+      "token_nowpayments": null
+    },
+    "pix_manual": {
+      "enabled": false,
+      "pix_key": null,
+      "pix_key_type": null
+    },
+    "nubank_imap": {
+      "enabled": false,
+      "email": null,
+      "password": null,
+      "pix_key": null,
+      "pix_key_type": null
+    }
+  },
+  "payment_tracking": {
+    "items": {}
+  },
+  "nubank_pending_payments": {},
+  "cloud_data": {
+    "client_id": null,
+    "client_secret": null,
+    "bot_token": null,
+    "log_channel_id": null,
+    "definitions": {
+      "remove_autorole": {
+        "enabled": false
+      },
+      "sync_oauth2": {
+        "enabled": false
+      },
+      "require_oauth2": {
+        "enabled": false
+      },
+      "persistent_oauth2": {
+        "enabled": false
+      },
+      "auto_join_oauth2": {
+        "enabled": false
+      },
+      "block_vpn": {
+        "enabled": false
+      },
+      "block_mobile": {
+        "enabled": false
+      },
+      "block_no_verified_email": {
+        "enabled": false
+      },
+      "block_no_email": {
+        "enabled": false
+      },
+      "block_spam": {
+        "enabled": false
+      }
+    },
+    "message_verify": {
+      "message_style": "embed",
+      "button": {
+        "label": "Verificar",
+        "emoji": null,
+        "style": "green"
+      },
+      "embed": {
+        "title": "Verificação",
+        "description": null,
+        "color": null,
+        "image_url": null,
+        "thumbnail_url": null
+      },
+      "content": {
+        "content": null,
+        "image_url": null
+      },
+      "container": {
+        "content": null,
+        "image_url": null,
+        "thumbnail_url": null,
+        "color": null
+      }
+    }
+  },
+  "cloud_gifts": {
+    "items": []
+  },
+  "cloud_tasks": {
+    "items": []
+  },
+  "tickets_config": {
+    "panels": {}
+  },
+  "tickets_data": {},
+  "tickets_calls": {},
+  "bot_connection": {
+    "channel_id": null,
+    "was_connected": false
+  },
+  "antifake_config": {
+    "enabled": false,
+    "min_days": 7,
+    "block_bots": false
+  },
+  "antifake_authorized": {
+    "users": []
+  },
+  "antifake_logs": {
+    "logs": {}
+  },
+  "interaction_monitor_config": {
+    "enabled": true
+  }
+}

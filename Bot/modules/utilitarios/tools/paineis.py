@@ -1,0 +1,1072 @@
+"""
+paineis.py — Componentes V2 para o módulo Tools
+Reformulado: sistema de painéis customizáveis por usuário (criar, editar, publicar)
+"""
+
+import disnake
+import disnake.ui as ui
+from functions.emoji import emoji
+from functions.database import database as db
+
+# ── Todas as funções disponíveis no sistema ────────────────────────────────────
+
+ALL_FUNCTIONS = {
+    # Perfil
+    "status_toggle":       {"label": "Status Animado",        "category": "perfil",  "emoji": "▶️",  "desc": "Liga/desliga o status animado", "toggle": True},
+    "status_config":       {"label": "Configurar Status",     "category": "perfil",  "emoji": "⚙️",  "desc": "Adiciona/edita/remove status"},
+    # Limpeza
+    "clear_dm":            {"label": "Limpar DM",             "category": "limpeza", "emoji": "🗑️",  "desc": "Limpa mensagens de uma DM"},
+    "clear_dm_media":      {"label": "Limpar Mídia DM",       "category": "limpeza", "emoji": "📎",  "desc": "Remove mídias de uma DM"},
+    "close_dms":           {"label": "Fechar DMs",            "category": "limpeza", "emoji": "🔒",  "desc": "Fecha todas as DMs"},
+    "clear_all_dms":       {"label": "Limpar Todas DMs",      "category": "limpeza", "emoji": "💥",  "desc": "Limpa todas as DMs (background)"},
+    "open_dms":            {"label": "Abrir DMs",             "category": "limpeza", "emoji": "🔓",  "desc": "Abre suas DMs"},
+    "leave_group_dms":     {"label": "Sair Group DMs",        "category": "limpeza", "emoji": "👋",  "desc": "Sai de todos os grupos DM"},
+    "nuke_all_dms":        {"label": "Nuke Todas DMs",        "category": "limpeza", "emoji": "☢️",  "desc": "Nuke de DMs em background"},
+    "clear_voice_msgs":    {"label": "Limpar Msgs Voz",       "category": "limpeza", "emoji": "🎙️", "desc": "Remove mensagens de voz"},
+    "remove_friends":      {"label": "Remover Amigos",        "category": "limpeza", "emoji": "❌",  "desc": "Remove todos os amigos"},
+    "clear_messages":      {"label": "Limpar Msgs Canal",     "category": "limpeza", "emoji": "🧹",  "desc": "Limpa mensagens de um canal"},
+    "open_history_dms":    {"label": "Abrir Histórico DMs",   "category": "limpeza", "emoji": "📂",  "desc": "Abre histórico de DMs"},
+    # Raid
+    "kick_all":            {"label": "Kickar Todos",          "category": "raid",    "emoji": "🦵",  "desc": "Kicka todos do servidor"},
+    "ban_all":             {"label": "Banir Todos",           "category": "raid",    "emoji": "🔨",  "desc": "Bane todos do servidor"},
+    "clear_server":        {"label": "Limpar Servidor",       "category": "raid",    "emoji": "🔥",  "desc": "Limpa canais/cargos do servidor"},
+    "send_dm_all":         {"label": "DM para Todos",         "category": "raid",    "emoji": "📨",  "desc": "Envia DM para todos os membros"},
+    "leave_servers":       {"label": "Sair de Servidores",    "category": "raid",    "emoji": "🚪",  "desc": "Sai de todos os servidores"},
+    "delete_servers":      {"label": "Deletar Servidores",    "category": "raid",    "emoji": "💣",  "desc": "Deleta servidores próprios"},
+    # Farms
+    "farm_kosame":         {"label": "Farm Kosame",           "category": "farms",   "emoji": "🌾",  "desc": "Liga/desliga farm no Kosame", "toggle": True},
+    "farm_zany":           {"label": "Farm Zany",             "category": "farms",   "emoji": "🌾",  "desc": "Liga/desliga farm no Zany",   "toggle": True},
+    # Call
+    "voice_toggle":        {"label": "Voz",                   "category": "call",    "emoji": "🎙️", "desc": "Conecta/desconecta do canal de voz", "toggle": True},
+    "voice_reconnect":     {"label": "Reconectar à Voz",      "category": "call",    "emoji": "🔄",  "desc": "Reconecta ao canal de voz"},
+    "voice_status":        {"label": "Status de Voz",         "category": "call",    "emoji": "📊",  "desc": "Verifica status de voz"},
+    "spam_call":           {"label": "Spam Call",             "category": "call",    "emoji": "📞",  "desc": "Liga/desliga spam de chamadas", "toggle": True},
+}
+
+# Planos e acesso mínimo por função
+FUNCTION_MIN_PLAN = {
+    "status_toggle": "free", "status_config": "free",
+    "voice_toggle": "free", "voice_reconnect": "free",
+    "voice_status": "free", "spam_call": "free",
+    "clear_dm": "booster", "clear_dm_media": "booster", "close_dms": "booster",
+    "clear_all_dms": "booster", "open_dms": "booster", "leave_group_dms": "booster",
+    "nuke_all_dms": "booster", "clear_voice_msgs": "booster", "remove_friends": "booster",
+    "clear_messages": "booster", "open_history_dms": "booster",
+    "farm_kosame": "booster", "farm_zany": "booster",
+    "kick_all": "scarlet", "ban_all": "scarlet", "clear_server": "scarlet",
+    "send_dm_all": "scarlet", "leave_servers": "scarlet", "delete_servers": "scarlet",
+}
+
+PLAN_RANK = {"free": 0, "booster": 1, "scarlet": 2}
+
+
+def _ck() -> dict:
+    """Retorna accent_colour do banco de dados, se configurado."""
+    colors = db.get_document("custom_colors") or {}
+    hex_ = colors.get("primary")
+    if hex_:
+        try:
+            return {"accent_colour": disnake.Colour(int(hex_.replace("#", ""), 16))}
+        except (ValueError, TypeError):
+            pass
+    return {}
+
+
+def _plan_label(plano: str) -> str:
+    return {"free": "Free", "booster": "Booster", "scarlet": "Amethys"}.get(plano, plano.capitalize())
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAINÉIS DE ADMINISTRAÇÃO (config do módulo)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_tools_main(config: dict) -> list:
+    ativo = config.get("ativo", False)
+    paineis_cfg = config.get("paineis", {})
+    total_paineis = len(paineis_cfg)
+
+    status_icon = emoji.correct if ativo else emoji.wrong
+    status_text = "Ativo" if ativo else "Inativo"
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Painel > **Tools**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"Sistema de ferramentas com painéis customizáveis.\n"
+                f"Crie painéis e publique no canal desejado."
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"**Status:** {status_icon} `{status_text}`\n"
+                f"**Painéis Criados:** `{total_paineis}`"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(
+                    label="Desativar" if ativo else "Ativar",
+                    style=disnake.ButtonStyle.red if ativo else disnake.ButtonStyle.green,
+                    emoji=emoji.power,
+                    custom_id="Tools_Toggle"
+                ),
+                ui.Button(
+                    label="Criar Painel",
+                    style=disnake.ButtonStyle.blurple,
+                    emoji=emoji.plus,
+                    custom_id="Tools_CriarPainel"
+                ),
+                ui.Button(
+                    label="Gerenciar Painéis",
+                    style=disnake.ButtonStyle.grey,
+                    emoji=emoji.settings2 if hasattr(emoji, "settings2") else emoji.edit,
+                    custom_id="Tools_GerenciarPaineis"
+                ),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(
+                label="Voltar",
+                style=disnake.ButtonStyle.grey,
+                emoji=emoji.back,
+                custom_id="PainelInicial"
+            ),
+        ),
+    ]
+
+
+def get_tools_cargos(config: dict) -> list:
+    cargos = config.get("cargos", {})
+    free_id    = cargos.get("free",    "Não configurado")
+    booster_id = cargos.get("booster", "Não configurado")
+    scarlet_id = cargos.get("scarlet", "Não configurado")
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Painel > Tools > **Cargos**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"Configure os IDs dos cargos para cada plano.\n"
+                f"Membros com esses cargos terão acesso ao painel correspondente."
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"{emoji.link} **Free:** `{free_id}`\n"
+                f"{emoji.link} **Booster:** `{booster_id}`\n"
+                f"{emoji.link} **Amethys:** `{scarlet_id}`"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Free",    style=disnake.ButtonStyle.grey,   emoji=emoji.edit, custom_id="Tools_EditarCargoFree"),
+                ui.Button(label="Booster", style=disnake.ButtonStyle.blurple, emoji=emoji.edit, custom_id="Tools_EditarCargoBooster"),
+                ui.Button(label="Amethys", style=disnake.ButtonStyle.red,    emoji=emoji.edit, custom_id="Tools_EditarCargoScarlet"),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_PainelPrincipal"),
+        ),
+    ]
+
+
+def get_tools_botao(config: dict) -> list:
+    botao = config.get("botao", {})
+    label     = botao.get("label", "Acessar Painel")
+    emoji_raw = botao.get("emoji") or "Não configurado"
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Painel > Tools > **Botão**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay("Personalize o botão exibido na mensagem pública de verificação."),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"{emoji.link} **Label:** `{label}`\n"
+                f"{emoji.link} **Emoji:** `{emoji_raw}`"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Editar Botão", style=disnake.ButtonStyle.blurple, emoji=emoji.edit, custom_id="Tools_EditarBotao"),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_PainelPrincipal"),
+        ),
+    ]
+
+
+def get_tools_mensagem(config: dict) -> list:
+    msg = config.get("mensagem", {}) or {}
+
+    has_content   = bool(msg.get("content"))
+    embed_data    = msg.get("embed") or {}
+    has_embed     = any(embed_data.get(k) for k in ("title", "description", "footer"))
+    has_image     = bool(
+        msg.get("externalImage") or embed_data.get("banner") or embed_data.get("thumbnail")
+    )
+    has_container = bool(msg.get("container"))
+
+    other_disabled = has_container
+    can_preview = any([has_content, has_embed, has_container, has_image])
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Painel > Tools > **Mensagem**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                "Configure a mensagem exibida no painel público do Tools.\n"
+                "-# Aparece quando o membro clica no botão de verificar plano."
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id="Tools_Mensagem_ApagarContent", disabled=not has_content or other_disabled),
+                ui.Button(label="Definir Mensagem", style=disnake.ButtonStyle.grey, emoji=emoji.message,
+                          custom_id="Tools_Mensagem_DefinirContent", disabled=other_disabled),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id="Tools_Mensagem_ApagarEmbed", disabled=not has_embed or other_disabled),
+                ui.Button(label="Definir Embed", style=disnake.ButtonStyle.grey, emoji=emoji.embed,
+                          custom_id="Tools_Mensagem_DefinirEmbed", disabled=other_disabled),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id="Tools_Mensagem_ApagarImagens", disabled=not has_image),
+                ui.Button(label="Definir Imagens", style=disnake.ButtonStyle.grey, emoji=emoji.image if hasattr(emoji, "image") else emoji.link,
+                          custom_id="Tools_Mensagem_DefinirImagens"),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id="Tools_Mensagem_ApagarContainer", disabled=not has_container),
+                ui.Button(label="Definir Container", style=disnake.ButtonStyle.grey, emoji=emoji.commands if hasattr(emoji, "commands") else emoji.edit,
+                          custom_id="Tools_Mensagem_DefinirContainer",
+                          disabled=(has_content or has_embed) and not has_container),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Visualizar", style=disnake.ButtonStyle.grey, emoji=emoji.search,
+                      custom_id="Tools_Mensagem_Visualizar", disabled=not can_preview),
+            ui.Button(label="Enviar no Canal", style=disnake.ButtonStyle.blurple, emoji=emoji.arrow,
+                      custom_id="Tools_Mensagem_EnviarNoCanal", disabled=not can_preview),
+            ui.Button(label="Apagar Tudo", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                      custom_id="Tools_Mensagem_ApagarTudo", disabled=not can_preview),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back,
+                      custom_id="Tools_PainelPrincipal"),
+        ),
+    ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# GERENCIAMENTO DE PAINÉIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_gerenciar_paineis(config: dict) -> list:
+    """Lista todos os painéis criados com opções de criar/editar/deletar."""
+    paineis_cfg = config.get("paineis", {})
+    paineis_list = list(paineis_cfg.items())  # [(id, data), ...]
+
+    container_items = [
+        ui.TextDisplay(
+            f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+            f"-# Painel > Tools > **Gerenciar Painéis**"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.TextDisplay(
+            f"Aqui você cria e configura painéis personalizados.\n"
+            f"Cada painel tem suas funções, plano mínimo e pode ser publicado num canal.\n\n"
+            f"**Total de painéis:** `{len(paineis_list)}`"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+    ]
+
+    if paineis_list:
+        # Select para editar painel existente
+        options_edit = [
+            disnake.SelectOption(
+                label=data.get("nome", f"Painel {pid[:8]}"),
+                value=pid,
+                description=f"Plano: {_plan_label(data.get('plano_min', 'free'))} | Funções: {len(data.get('funcoes', []))}",
+                emoji="📋"
+            )
+            for pid, data in paineis_list[:25]
+        ]
+        container_items.append(
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder="Selecione um painel para editar...",
+                    custom_id="Tools_SelecionarPainelEditar",
+                    options=options_edit
+                )
+            )
+        )
+        # Select para deletar
+        options_del = [
+            disnake.SelectOption(
+                label=data.get("nome", f"Painel {pid[:8]}"),
+                value=pid,
+                description="Clique para deletar este painel",
+                emoji="🗑️"
+            )
+            for pid, data in paineis_list[:25]
+        ]
+        container_items.append(
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder="Selecione um painel para deletar...",
+                    custom_id="Tools_SelecionarPainelDeletar",
+                    options=options_del
+                )
+            )
+        )
+    else:
+        container_items.append(
+            ui.TextDisplay(f"{emoji.wrong} Nenhum painel criado ainda. Clique em **Criar Painel** para começar.")
+        )
+
+    container_items += [
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.ActionRow(
+            ui.Button(label="Criar Painel", style=disnake.ButtonStyle.green, emoji=emoji.plus, custom_id="Tools_CriarPainel"),
+        ),
+    ]
+
+    return [
+        ui.Container(*container_items, **_ck()),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_PainelPrincipal"),
+        ),
+    ]
+
+
+def get_editor_painel(painel_id: str, painel_data: dict) -> list:
+    """Editor completo de um painel específico."""
+    nome       = painel_data.get("nome", "Sem nome")
+    plano_min  = painel_data.get("plano_min", "free")
+    funcoes    = painel_data.get("funcoes", [])
+    canal_id   = painel_data.get("canal_id")
+    msg_id     = painel_data.get("mensagem_id")
+    cargo_id   = painel_data.get("cargo_id")
+    botao      = painel_data.get("botao", {}) or {}
+    publicado  = bool(canal_id and msg_id)
+
+    canal_str  = f"<#{canal_id}>" if canal_id else "`Não definido`"
+    pub_str    = f"{emoji.correct} `Publicado` em {canal_str}" if publicado else f"{emoji.wrong} `Não publicado`"
+    cargo_str  = f"`{cargo_id}`" if cargo_id else "`Não configurado`"
+    botao_str  = f"`{botao.get('label', 'Não configurado')}`"
+
+    # Lista de funções selecionadas
+    if funcoes:
+        fn_lines = "\n".join(
+            f"> {ALL_FUNCTIONS[f]['emoji']} **{ALL_FUNCTIONS[f]['label']}** — {ALL_FUNCTIONS[f]['desc']}"
+            for f in funcoes if f in ALL_FUNCTIONS
+        )
+    else:
+        fn_lines = "> Nenhuma função selecionada."
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **{nome}**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"**Nome:** `{nome}`\n"
+                f"**Plano Mínimo:** `{_plan_label(plano_min)}`\n"
+                f"**Cargo:** {cargo_str}\n"
+                f"**Botão:** {botao_str}\n"
+                f"**Status:** {pub_str}\n"
+                f"**Funções ({len(funcoes)}):**\n{fn_lines}"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Editar Nome",     style=disnake.ButtonStyle.grey,    emoji=emoji.edit,    custom_id=f"Tools_Painel_EditarNome:{painel_id}"),
+                ui.Button(label="Plano Mínimo",    style=disnake.ButtonStyle.blurple, emoji=emoji.role,    custom_id=f"Tools_Painel_EditarPlano:{painel_id}"),
+                ui.Button(label="Editar Mensagem", style=disnake.ButtonStyle.grey,    emoji=emoji.message, custom_id=f"Tools_Painel_EditarMsg:{painel_id}"),
+            ),
+            ui.ActionRow(
+                ui.Button(label="Cargo",           style=disnake.ButtonStyle.grey,    emoji=emoji.role,    custom_id=f"Tools_Painel_EditarCargo:{painel_id}"),
+                ui.Button(label="Botão",           style=disnake.ButtonStyle.grey,    emoji=emoji.edit,    custom_id=f"Tools_Painel_EditarBotao:{painel_id}"),
+            ),
+            ui.ActionRow(
+                ui.Button(label="Gerenciar Funções", style=disnake.ButtonStyle.blurple, emoji=emoji.settings2 if hasattr(emoji, "settings2") else emoji.edit, custom_id=f"Tools_Painel_EditarFuncoes:{painel_id}"),
+                ui.Button(label="Definir Canal",     style=disnake.ButtonStyle.grey,    emoji=emoji.textc if hasattr(emoji, "textc") else emoji.link,           custom_id=f"Tools_Painel_DefinirCanal:{painel_id}"),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar",   style=disnake.ButtonStyle.grey,  emoji=emoji.back,  custom_id="Tools_GerenciarPaineis"),
+            ui.Button(label="Publicar" if not publicado else "Atualizar", style=disnake.ButtonStyle.green, emoji=emoji.arrow,  custom_id=f"Tools_Painel_Publicar:{painel_id}", disabled=not canal_id),
+            ui.Button(label="Despublicar", style=disnake.ButtonStyle.red, emoji=emoji.delete, custom_id=f"Tools_Painel_Despublicar:{painel_id}", disabled=not publicado),
+        ),
+    ]
+
+
+def get_editor_funcoes_painel(painel_id: str, painel_data: dict, plano_usuario: str = "scarlet") -> list:
+    """
+    Tela para selecionar quais funções o painel terá.
+    Mostra apenas as funções acessíveis pelo plano mínimo configurado no painel.
+    """
+    plano_min = painel_data.get("plano_min", "free")
+    funcoes_ativas = set(painel_data.get("funcoes", []))
+    rank_min = PLAN_RANK.get(plano_min, 0)
+
+    # Filtra funções acessíveis pelo plano do painel
+    funcoes_disponiveis = {
+        k: v for k, v in ALL_FUNCTIONS.items()
+        if PLAN_RANK.get(FUNCTION_MIN_PLAN.get(k, "free"), 0) <= rank_min
+    }
+
+    # Agrupa por categoria
+    by_cat: dict[str, list] = {}
+    for k, v in funcoes_disponiveis.items():
+        by_cat.setdefault(v["category"], []).append(k)
+
+    cat_names = {"perfil": "Perfil", "limpeza": "Limpeza", "raid": "Raid", "farms": "Farms", "call": "Call"}
+
+    container_items = [
+        ui.TextDisplay(
+            f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+            f"-# Tools > Painéis > **Funções do Painel**"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.TextDisplay(
+            f"Selecione as funções que este painel disponibilizará.\n"
+            f"Plano mínimo configurado: **{_plan_label(plano_min)}**\n"
+            f"Funções ativas: **{len(funcoes_ativas)}**"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+    ]
+
+    # Um select por categoria (máx 5 selects / 25 opções cada)
+    selects_adicionados = 0
+    for cat, fn_keys in by_cat.items():
+        if selects_adicionados >= 5:
+            break
+        options = []
+        for k in fn_keys:
+            fn = ALL_FUNCTIONS[k]
+            options.append(
+                disnake.SelectOption(
+                    label=fn["label"],
+                    value=k,
+                    description=fn["desc"],
+                    emoji=fn["emoji"],
+                    default=(k in funcoes_ativas)
+                )
+            )
+        if not options:
+            continue
+        container_items.append(
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder=f"Funções de {cat_names.get(cat, cat)}",
+                    custom_id=f"Tools_Painel_FuncoesSelect:{painel_id}:{cat}",
+                    options=options[:25],
+                    min_values=0,
+                    max_values=len(options[:25])
+                )
+            )
+        )
+        selects_adicionados += 1
+
+    if selects_adicionados == 0:
+        container_items.append(
+            ui.TextDisplay(f"{emoji.wrong} Nenhuma função disponível para o plano **{_plan_label(plano_min)}**.")
+        )
+
+    return [
+        ui.Container(*container_items, **_ck()),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back,
+                      custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+def get_editor_plano_painel(painel_id: str, painel_data: dict) -> list:
+    """Selector de plano mínimo para um painel."""
+    plano_atual = painel_data.get("plano_min", "free")
+
+    options = [
+        disnake.SelectOption(
+            label="Free",    value="free",    emoji="🟢",
+            description="Todos os membros com cargo Free",    default=(plano_atual == "free")
+        ),
+        disnake.SelectOption(
+            label="Booster", value="booster", emoji="🔵",
+            description="Membros com cargo Booster ou superior", default=(plano_atual == "booster")
+        ),
+        disnake.SelectOption(
+            label="Amethys", value="scarlet", emoji="🔴",
+            description="Apenas membros com cargo Amethys",   default=(plano_atual == "scarlet")
+        ),
+    ]
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **Plano Mínimo**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"Defina o plano mínimo necessário para acessar este painel.\n"
+                f"Plano atual: **{_plan_label(plano_atual)}**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder="Selecione o plano mínimo",
+                    custom_id=f"Tools_Painel_PlanoSelect:{painel_id}",
+                    options=options
+                )
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back,
+                      custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+def get_editor_cargo_painel(painel_id: str, painel_data: dict) -> list:
+    """Editor do cargo de acesso de um painel específico."""
+    cargo_id = painel_data.get("cargo_id")
+    cargo_str = f"`{cargo_id}`" if cargo_id else "`Não configurado`"
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **Cargo de Acesso**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"Configure o cargo necessário para acessar este painel.\n"
+                f"Cargo atual: {cargo_str}"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Definir Cargo", style=disnake.ButtonStyle.blurple, emoji=emoji.edit,   custom_id=f"Tools_Painel_CargoModal:{painel_id}"),
+                ui.Button(label="Remover Cargo", style=disnake.ButtonStyle.red,     emoji=emoji.delete, custom_id=f"Tools_Painel_CargoRemover:{painel_id}", disabled=not cargo_id),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+def get_editor_botao_painel(painel_id: str, painel_data: dict) -> list:
+    """Editor do botão público de um painel específico."""
+    botao     = painel_data.get("botao", {}) or {}
+    label     = botao.get("label", "Não configurado")
+    emoji_raw = botao.get("emoji") or "Não configurado"
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **Botão**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"Personalize o botão exibido na mensagem pública deste painel.\n\n"
+                f"{emoji.link} **Label:** `{label}`\n"
+                f"{emoji.link} **Emoji:** `{emoji_raw}`"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Editar Botão", style=disnake.ButtonStyle.blurple, emoji=emoji.edit, custom_id=f"Tools_Painel_BotaoModal:{painel_id}"),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+def get_definir_canal_painel(painel_id: str) -> list:
+    """Channel select para definir onde o painel será publicado."""
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **Definir Canal**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                "Selecione o canal onde este painel será publicado.\n"
+                "-# A mensagem pública com o botão será enviada para este canal."
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.ChannelSelect(
+                    placeholder="Selecione o canal...",
+                    custom_id=f"Tools_Painel_CanalSelect:{painel_id}",
+                    channel_types=[disnake.ChannelType.text],
+                    min_values=1,
+                    max_values=1,
+                )
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back,
+                      custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+def get_editor_msg_painel(painel_id: str, painel_data: dict) -> list:
+    """Editor da mensagem pública de um painel específico."""
+    msg = painel_data.get("mensagem", {}) or {}
+
+    has_content   = bool(msg.get("content"))
+    embed_data    = msg.get("embed") or {}
+    has_embed     = any(embed_data.get(k) for k in ("title", "description", "footer"))
+    has_image     = bool(msg.get("externalImage") or embed_data.get("banner") or embed_data.get("thumbnail"))
+    has_container = bool(msg.get("container"))
+
+    other_disabled = has_container
+    can_preview = any([has_content, has_embed, has_container, has_image])
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Painéis > **Mensagem do Painel**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                "Configure a mensagem pública deste painel.\n"
+                "Ela será enviada no canal configurado com o botão de acesso."
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id=f"Tools_PainelMsg_ApagarContent:{painel_id}", disabled=not has_content or other_disabled),
+                ui.Button(label="Definir Mensagem", style=disnake.ButtonStyle.grey, emoji=emoji.message,
+                          custom_id=f"Tools_PainelMsg_DefinirContent:{painel_id}", disabled=other_disabled),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id=f"Tools_PainelMsg_ApagarEmbed:{painel_id}", disabled=not has_embed or other_disabled),
+                ui.Button(label="Definir Embed", style=disnake.ButtonStyle.grey, emoji=emoji.embed,
+                          custom_id=f"Tools_PainelMsg_DefinirEmbed:{painel_id}", disabled=other_disabled),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id=f"Tools_PainelMsg_ApagarImagens:{painel_id}", disabled=not has_image),
+                ui.Button(label="Definir Imagens", style=disnake.ButtonStyle.grey, emoji=emoji.link,
+                          custom_id=f"Tools_PainelMsg_DefinirImagens:{painel_id}"),
+            ),
+            ui.ActionRow(
+                ui.Button(label="", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                          custom_id=f"Tools_PainelMsg_ApagarContainer:{painel_id}", disabled=not has_container),
+                ui.Button(label="Definir Container", style=disnake.ButtonStyle.grey, emoji=emoji.edit,
+                          custom_id=f"Tools_PainelMsg_DefinirContainer:{painel_id}",
+                          disabled=(has_content or has_embed) and not has_container),
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Visualizar", style=disnake.ButtonStyle.grey, emoji=emoji.search,
+                      custom_id=f"Tools_PainelMsg_Visualizar:{painel_id}", disabled=not can_preview),
+            ui.Button(label="Apagar Tudo", style=disnake.ButtonStyle.red, emoji=emoji.delete,
+                      custom_id=f"Tools_PainelMsg_ApagarTudo:{painel_id}", disabled=not can_preview),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back,
+                      custom_id=f"Tools_Painel_Voltar:{painel_id}"),
+        ),
+    ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAINÉIS DE USUÁRIO (acesso público)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_acesso_verificado(plano: str, paineis_disponiveis: list) -> list:
+    """
+    Painel mostrado ao usuário após verificação de plano.
+    paineis_disponiveis: lista de (painel_id, painel_data) filtrados pelo plano.
+    """
+    PLAN_RANK_LOCAL = {"free": 0, "booster": 1, "scarlet": 2}
+    rank = PLAN_RANK_LOCAL.get(plano, 0)
+
+    container_items = [
+        ui.TextDisplay(
+            f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+            f"-# Tools — Verificação de Plano"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.TextDisplay(
+            f"{emoji.correct} **Acesso verificado!**\n\n"
+            f"**Seu plano:** `{_plan_label(plano)}`\n\n"
+            f"Selecione um painel abaixo para acessar as ferramentas."
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+    ]
+
+    if paineis_disponiveis:
+        # Botões de acesso direto (máx 10 painéis visíveis)
+        botoes = []
+        for pid, pdata in paineis_disponiveis[:10]:
+            botoes.append(
+                ui.Button(
+                    label=pdata.get("nome", "Painel"),
+                    style=disnake.ButtonStyle.blurple,
+                    custom_id=f"Tools_AbrirPainel:{pid}"
+                )
+            )
+        for i in range(0, len(botoes), 5):
+            container_items.append(ui.ActionRow(*botoes[i:i + 5]))
+    else:
+        container_items.append(
+            ui.TextDisplay(f"{emoji.wrong} Nenhum painel disponível para o seu plano no momento.")
+        )
+
+    container_items += [
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.ActionRow(
+            ui.Button(label="Login / Entrar", style=disnake.ButtonStyle.green, emoji=emoji.correct,
+                      custom_id="Tools_LoginBtn"),
+        ),
+    ]
+
+    return [ui.Container(*container_items, **_ck())]
+
+
+def get_painel_usuario(painel_id: str, painel_data: dict, author: disnake.Member, extra_ctx: dict = None) -> list:
+    """
+    Renderiza o painel de um usuário com as funções disponíveis.
+    extra_ctx: contexto extra como statuses, voice_state, etc.
+    """
+    extra_ctx = extra_ctx or {}
+    nome     = painel_data.get("nome", "Painel")
+    funcoes  = painel_data.get("funcoes", [])
+    plano    = painel_data.get("plano_min", "free")
+
+    # Conteúdo dinâmico de status
+    status_lines = ""
+    statuses = extra_ctx.get("statuses", [])
+    if statuses and any(f in funcoes for f in ("status_start", "status_stop", "status_config")):
+        lines = "\n".join(
+            f"> {i + 1}. {s.get('emoji', '') or ''} {s.get('text', '')}  `{s.get('delay', 5000)}ms`"
+            for i, s in enumerate(statuses[:5])
+        )
+        status_lines = f"\n\n**Status ({len(statuses)}):**\n{lines}"
+        if len(statuses) > 5:
+            status_lines += f"\n> ... e mais {len(statuses) - 5}"
+
+    # Conteúdo dinâmico de voz
+    voice_lines = ""
+    voice = extra_ctx.get("voice_state")
+    if voice and any(f in funcoes for f in ("voice_connect", "voice_disconnect", "voice_status")):
+        if voice.get("connected"):
+            voice_lines = (
+                f"\n\n**Voz:**\n"
+                f"> {emoji.correct} Conectado — `{voice.get('elapsedHuman', '—')}`\n"
+                f"> Canal: `{voice.get('channelId', '?')}`"
+            )
+        else:
+            voice_lines = f"\n\n**Voz:** {emoji.wrong} Desconectado"
+
+    container_items = [
+        ui.TextDisplay(
+            f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+            f"-# Tools > **{nome}**"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.TextDisplay(
+            f"Olá, **{author.display_name}**! Plano: `{_plan_label(plano)}`"
+            f"{status_lines}{voice_lines}"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+    ]
+
+    # Agrupamento de funções em selects por categoria
+    cat_funcoes: dict[str, list] = {}
+    for fn_key in funcoes:
+        if fn_key in ALL_FUNCTIONS:
+            cat = ALL_FUNCTIONS[fn_key]["category"]
+            cat_funcoes.setdefault(cat, []).append(fn_key)
+
+    cat_names = {"perfil": "Perfil", "limpeza": "Limpeza", "raid": "Raid", "farms": "Farms", "call": "Call"}
+    selects_count = 0
+
+    for cat, fn_keys in cat_funcoes.items():
+        if selects_count >= 4:  # Máx 4 selects (deixar espaço para botões)
+            break
+        options = [
+            disnake.SelectOption(
+                label=ALL_FUNCTIONS[k]["label"],
+                value=k,
+                description=ALL_FUNCTIONS[k]["desc"],
+                emoji=ALL_FUNCTIONS[k]["emoji"]
+            )
+            for k in fn_keys
+        ]
+        container_items.append(
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder=f"Ações de {cat_names.get(cat, cat)}",
+                    custom_id=f"Tools_Acao:{painel_id}:{cat}",
+                    options=options[:25]
+                )
+            )
+        )
+        selects_count += 1
+
+    if not funcoes:
+        container_items.append(
+            ui.TextDisplay(f"{emoji.wrong} Este painel não possui funções configuradas.")
+        )
+
+    return [
+        ui.Container(*container_items, **_ck()),
+        ui.ActionRow(
+            ui.Button(label="Logout", style=disnake.ButtonStyle.red, emoji=emoji.wrong, custom_id="Tools_LogoutBtn"),
+        ),
+    ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAINÉIS AUXILIARES
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_sem_plano() -> list:
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — Sem Acesso"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"{emoji.wrong} **Acesso negado.**\n\n"
+                f"Você não possui nenhum cargo de plano configurado.\n"
+                f"Adquira um plano para ter acesso ao painel de ferramentas."
+            ),
+            **_ck(),
+        ),
+    ]
+
+
+def get_sistema_inativo() -> list:
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — Sistema Inativo"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"{emoji.wrong} **O sistema de Tools está temporariamente inativo.**\n\n"
+                f"Tente novamente mais tarde ou contate um administrador."
+            ),
+            **_ck(),
+        ),
+    ]
+
+
+def get_painel_login() -> list:
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — Login"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"**# Faça login com seu token**\n\n"
+                f"{emoji.link} O token é usado apenas para autenticação\n"
+                f"{emoji.link} Não compartilhe seu token com ninguém\n\n"
+                f"-# Clique no botão abaixo para continuar"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Fazer Login", style=disnake.ButtonStyle.green, emoji=emoji.correct, custom_id="Tools_LoginBtn"),
+            ),
+            **_ck(),
+        ),
+    ]
+
+
+def get_painel_blacklist() -> list:
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — Bloqueado"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(
+                f"{emoji.wrong} **Você está na blacklist do sistema.**\n\n"
+                f"{emoji.link} Uso indevido do bot\n"
+                f"{emoji.link} Tentativas de abuso\n"
+                f"{emoji.link} Violação dos termos\n\n"
+                f"-# Caso ache que isso é um erro, contate um administrador."
+            ),
+            **_ck(),
+        ),
+    ]
+
+
+def get_resultado(sucesso: bool, mensagem: str, back_custom_id: str) -> list:
+    icon = emoji.correct if sucesso else emoji.wrong
+    cor  = disnake.ButtonStyle.green if sucesso else disnake.ButtonStyle.red
+
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — {'Sucesso' if sucesso else 'Erro'}"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(f"{icon} {mensagem}"),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id=back_custom_id),
+        ),
+    ]
+
+
+def get_confirmacao(titulo: str, descricao: str, confirm_id: str, cancel_id: str) -> list:
+    """Painel genérico de confirmação de ação destrutiva."""
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools — **Confirmação**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay(f"**{titulo}**\n\n{descricao}"),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.ActionRow(
+                ui.Button(label="Confirmar", style=disnake.ButtonStyle.red,  emoji=emoji.correct, custom_id=confirm_id),
+                ui.Button(label="Cancelar",  style=disnake.ButtonStyle.grey, emoji=emoji.wrong,   custom_id=cancel_id),
+            ),
+            **_ck(),
+        ),
+    ]
+
+
+# ── Sub-painéis de ação por categoria (usados ao selecionar no painel de usuário) ──
+
+def get_status_config(statuses: list) -> list:
+    """Painel de configuração de status animado."""
+    if statuses:
+        lines = "\n".join(
+            f"> **{i+1}.** {s.get('emoji', '') or ''} {s.get('text', '')}  `{s.get('delay', 5000)}ms`"
+            for i, s in enumerate(statuses)
+        )
+        status_text = f"**Status configurados ({len(statuses)}):**\n{lines}"
+    else:
+        status_text = f"**Nenhum status configurado ainda.**\n> Clique em **Adicionar** para criar o primeiro."
+
+    container_items = [
+        ui.TextDisplay(
+            f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+            f"-# Tools > Perfil > **Status Animado**"
+        ),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.TextDisplay(status_text),
+        ui.Separator(spacing=disnake.SeparatorSpacing.small),
+        ui.ActionRow(
+            ui.Button(label="Adicionar", style=disnake.ButtonStyle.green, emoji=emoji.plus,   custom_id="Tools_Perfil_AddStatus"),
+            ui.Button(label="Editar",    style=disnake.ButtonStyle.grey,  emoji=emoji.edit,   custom_id="Tools_Perfil_OpenEditSelect", disabled=not statuses),
+            ui.Button(label="Remover",   style=disnake.ButtonStyle.red,   emoji=emoji.delete, custom_id="Tools_Perfil_OpenRemoveSelect", disabled=not statuses),
+            ui.Button(label="Limpar",    style=disnake.ButtonStyle.red,   emoji=emoji.delete, custom_id="Tools_Perfil_ClearStatus", disabled=not statuses),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Iniciar Status", style=disnake.ButtonStyle.green, emoji=emoji.correct, custom_id="Tools_Perfil_StartStatus", disabled=not statuses),
+            ui.Button(label="Parar Status",   style=disnake.ButtonStyle.red,   emoji=emoji.wrong,  custom_id="Tools_Perfil_StopStatus",  disabled=not statuses),
+        ),
+    ]
+
+    return [
+        ui.Container(*container_items, **_ck()),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_BackPainelAtual"),
+        ),
+    ]
+
+
+def get_status_remove_select(statuses: list) -> list:
+    options = [
+        disnake.SelectOption(label=f"{i+1}. {s.get('text', '')[:50]}", value=str(i), emoji=s.get("emoji") or "📝")
+        for i, s in enumerate(statuses)
+    ]
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Perfil > **Remover Status**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay("Selecione o status que deseja remover:"),
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder="Escolha um status para remover",
+                    custom_id="Tools_Perfil_remove_specific",
+                    options=options[:25]
+                )
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_BackStatusConfig"),
+        ),
+    ]
+
+
+def get_status_edit_select(statuses: list) -> list:
+    options = [
+        disnake.SelectOption(label=f"{i+1}. {s.get('text', '')[:50]}", value=str(i), emoji=s.get("emoji") or "📝")
+        for i, s in enumerate(statuses)
+    ]
+    return [
+        ui.Container(
+            ui.TextDisplay(
+                f"# {emoji.a1}{emoji.b2}{emoji.c3}{emoji.d4}{emoji.e5}\n"
+                f"-# Tools > Perfil > **Editar Status**"
+            ),
+            ui.Separator(spacing=disnake.SeparatorSpacing.small),
+            ui.TextDisplay("Selecione o status que deseja editar:"),
+            ui.ActionRow(
+                ui.StringSelect(
+                    placeholder="Escolha um status para editar",
+                    custom_id="Tools_Perfil_edit_specific",
+                    options=options[:25]
+                )
+            ),
+            **_ck(),
+        ),
+        ui.ActionRow(
+            ui.Button(label="Voltar", style=disnake.ButtonStyle.grey, emoji=emoji.back, custom_id="Tools_BackStatusConfig"),
+        ),
+    ]

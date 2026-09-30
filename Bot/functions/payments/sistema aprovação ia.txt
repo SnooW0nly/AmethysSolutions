@@ -1,0 +1,155 @@
+const axios = require('axios');
+const FormData = require('form-data');
+const https = require('https');
+const fs = require('fs');
+const { OpenAI } = require('openai');
+const Tesseract = require('tesseract.js');
+const sharp = require('sharp');
+
+/**
+ * Verifica comprovante via OCR.space
+ * @param {string|Buffer} imageInput - URL da imagem do comprovante OU buffer
+ * @param {string|string[]} nomesRecebedor - Nome(s) do recebedor para validar (string ou array)
+ * @param {number} [valorEsperado] - Valor esperado para validar (opcional)
+ * @param {string} [apiKey] - Chave da API OCR.space (opcional)
+ * @returns {Promise<{nomeOk: boolean, texto: string, pagador: string, valorOk: boolean, valorExtraido: number|null, nomeEncontrado: string|null, erro?: string}>}
+ */
+async function verificarComprovanteOCR(imageInput, nomesRecebedor, valorEsperado, apiKey = 'helloworld', identificadorEsperado = null, horarioCriacao = null) {
+    try {
+        let texto = '';
+        if (Buffer.isBuffer(imageInput)) {
+            texto = await ocrTesseract(imageInput);
+        } else if (typeof imageInput === 'string') {
+            const imgResp = await axios.get(imageInput, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(imgResp.data, 'binary');
+            return await verificarComprovanteOCR(buffer, nomesRecebedor, valorEsperado, apiKey, identificadorEsperado, horarioCriacao);
+        } else {
+            return { nomeOk: false, texto: '', pagador: '', valorOk: false, valorExtraido: null, erro: 'Formato de imagem inválido' };
+        }
+
+        // Sempre consultar a IA Groq após o OCR, independentemente do resultado automático
+        let dadosGroq = null;
+        let nomeRecebedor, dataPagamento, horarioPagamento, valor;
+        if (process.env.GROQ_API_KEY) {
+            try {
+                dadosGroq = await analisarComprovanteComGroq(texto);
+                console.log('[GROQ DEBUG]', dadosGroq);
+                function limparRespostaIA(resposta) {
+                  if (!resposta) return null;
+                  return resposta.replace(/^[0-9]+\.\s*/, '').trim();
+                }
+                nomeRecebedor = limparRespostaIA(dadosGroq.nomeRecebedor);
+                dataPagamento = limparRespostaIA(dadosGroq.dataPagamento);
+                horarioPagamento = limparRespostaIA(dadosGroq.horarioPagamento);
+                valor = limparRespostaIA(dadosGroq.valor);
+            } catch (e) {
+                return { nomeOk: false, texto, pagador: '', valorOk: false, valorExtraido: null, erro: 'Erro ao consultar IA Groq' };
+            }
+        }
+
+        // Se a IA não encontrar algum campo essencial, retorna erro
+        if (!nomeRecebedor || nomeRecebedor === 'NÃO ENCONTRADO' || !valor || valor === 'NÃO ENCONTRADO' || !dataPagamento || dataPagamento === 'NÃO ENCONTRADO' || !horarioPagamento || horarioPagamento === 'NÃO ENCONTRADO') {
+            return { nomeOk: false, texto, pagador: '', valorOk: false, valorExtraido: null, erro: 'Não foi possível validar o nome, valor ou horário do pagamento no comprovante. Envie novamente ou aguarde análise manual.' };
+        }
+
+        // Comparação do nome (fuzzy ou exato)
+        const nomesValidos = Array.isArray(nomesRecebedor) ? nomesRecebedor : [nomesRecebedor];
+        const nomeOk = nomesValidos.some(n => nomeRecebedor && nomeRecebedor.toLowerCase().includes(n.toLowerCase()));
+        if (!nomeOk) {
+            return { nomeOk: false, texto, pagador: '', valorOk: false, valorExtraido: null, erro: 'Nome do recebedor não confere com o esperado.' };
+        }
+
+        // Comparação do valor
+        const valorExtraido = valor ? Number(valor.replace(',', '.').replace('R$', '').trim()) : null;
+        const valorOk = valorEsperado !== undefined && valorExtraido !== null
+          ? Math.abs(valorExtraido - valorEsperado) < 0.01
+          : false;
+        if (!valorOk) {
+            return { nomeOk, texto, pagador: '', valorOk: false, valorExtraido, erro: 'Valor do comprovante não confere com o esperado.' };
+        }
+
+        // Validação do horário do pagamento
+        let aprovadoHorario = false;
+        let dataHoraPagamento = null;
+        if (horarioCriacao) {
+            // Tenta converter data/hora extraída pela IA para timestamp
+            let dataStr = dataPagamento.trim();
+            let horaStr = horarioPagamento.trim();
+            let dia, mes, ano;
+            const meses = { jan: '01', fev: '02', mar: '03', abr: '04', mai: '05', jun: '06', jul: '07', ago: '08', set: '09', out: '10', nov: '11', dez: '12' };
+            if (/^[0-9]{2}\/\d{2}\/\d{4}$/.test(dataStr)) {
+                [dia, mes, ano] = dataStr.split('/');
+            } else if (/^[0-9]{2}\s+[A-Za-z]{3}\s+[0-9]{4}$/.test(dataStr)) {
+                const partes = dataStr.split(/\s+/);
+                dia = partes[0];
+                mes = meses[partes[1].slice(0,3).toLowerCase()] || partes[1];
+                ano = partes[2];
+            }
+            horaStr = horaStr.replace('h', ':').replace(/\s+/g, '');
+            if (/^[0-9]{2}:[0-9]{2}$/.test(horaStr)) horaStr += ':00';
+            if (dia && mes && ano && horaStr) {
+                const dataFormatada = `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}T${horaStr}-03:00`;
+                dataHoraPagamento = Date.parse(dataFormatada);
+                // Valida se está dentro de 10 minutos após a criação do carrinho
+                const limite = 10 * 60 * 1000;
+                aprovadoHorario = dataHoraPagamento >= horarioCriacao && dataHoraPagamento <= (horarioCriacao + limite);
+            }
+        }
+        if (horarioCriacao && !aprovadoHorario) {
+            return { nomeOk, texto, pagador: '', valorOk, valorExtraido, erro: 'O pagamento não foi feito no período válido! Só é aceito pagamento feito até 10 minutos após a criação do carrinho.' };
+        }
+
+        // Validação baseada apenas na resposta da IA
+        return {
+            validado: true,
+            motivo: 'Comprovante validado automaticamente pela IA Groq (nome, valor e horário)!',
+            nome: nomeRecebedor,
+            valor: valorExtraido,
+            dataHora: dataPagamento && horarioPagamento ? `${dataPagamento} ${horarioPagamento}` : null,
+            textoOCR: texto,
+            pagador: '',
+            valorOk,
+            nomeOk,
+            camposBrutos: { nomeRecebedor, valor, dataPagamento, horarioPagamento }
+        };
+    } catch (e) {
+        return { nomeOk: false, texto: '', pagador: '', valorOk: false, valorExtraido: null, erro: 'Erro inesperado na validação do comprovante.' };
+    }
+}
+
+async function ocrTesseract(imageBuffer) {
+  // Pré-processamento: converter para grayscale e aumentar contraste
+  const processed = await sharp(imageBuffer)
+    .grayscale()
+    .normalize()
+    .toBuffer();
+  const { data: { text } } = await Tesseract.recognize(processed, 'por'); // Removido logger
+  return text;
+}
+
+async function analisarComprovanteComGroq(textoOCR) {
+    const openai = new OpenAI({
+        apiKey: process.env.GROQ_API_KEY,
+        baseURL: 'https://api.groq.com/openai/v1',
+    });
+    const prompt = `Texto do comprovante:\n${textoOCR}\n\nPerguntas:\n1. Qual o nome do recebedor?\n2. Qual a data do pagamento?\n3. Qual o horário do pagamento?\n4. Qual o valor transferido?\n5. Qual o identificador Pix (procure por campos como 'Descrição do pagamento original', 'Identificador', 'ID', 'Mensagem ao pagador', etc. Se não encontrar, responda 'NÃO ENCONTRADO')?\n\nResponda apenas com os valores, um por linha, na ordem das perguntas. Se não encontrar algum valor, escreva 'NÃO ENCONTRADO'.`;
+    const completion = await openai.chat.completions.create({
+        model: 'llama3-70b-8192',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 200,
+        temperature: 0.1,
+    });
+    const resposta = completion.choices[0].message.content.trim().split('\n');
+    return {
+        nomeRecebedor: resposta[0] || null,
+        dataPagamento: resposta[1] || null,
+        horarioPagamento: resposta[2] || null,
+        valor: resposta[3] || null,
+        identificadorPix: resposta[4] || null,
+    };
+}
+
+// Definir a chave Groq diretamente no código (atenção: não recomendado para produção)
+// Configure GROQ_API_KEY no ambiente antes de executar.
+
+module.exports = { verificarComprovanteOCR }; 

@@ -1,0 +1,17 @@
+disnake
+py-discord-html-transcripts
+pymongo
+dnspython
+requests
+pytz
+
+aiohttp>=3.10
+
+websockets>=12.0
+
+python-socketio
+python-engineio
+
+PyJWT>=2.8.0
+
+python-telegram-bot

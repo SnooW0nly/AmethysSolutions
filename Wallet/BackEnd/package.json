@@ -1,0 +1,35 @@
+{
+  "name": "vision-wallet-backend",
+  "version": "1.0.1",
+  "description": "Backend API para Amethys Wallet",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "set-admin": "node scripts/set-admin.js",
+    "init-plans": "node scripts/init-plans.js",
+    "reset-balances": "node scripts/reset-balances.js",
+    "reconcile-balances": "node scripts/reconcile-balances.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.20.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^7.0.6",
+    "resend": "^6.5.2",
+    "web-push": "^3.6.7",
+    "ioredis": "^5.10.1"
+  }
+}

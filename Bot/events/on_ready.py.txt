@@ -1,0 +1,506 @@
+import disnake
+from disnake.ext import commands
+import os
+import core
+import asyncio
+from datetime import datetime
+from typing import Optional
+from functions.utils import utils
+from functions.database import database as db
+from functions.emoji import init_on_startup
+
+
+class OnLoad(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self._checked_pending_carts = False
+        self._websocket_initialized = False
+        self._on_ready_processing = False
+        self._last_ready_time = 0
+        self._on_ready_once = False
+
+    @commands.Cog.listener("on_ready")
+    async def on_load(self):
+        import time
+        
+        current_time = time.time()
+        time_since_last_ready = current_time - self._last_ready_time
+        
+        if self._on_ready_once:
+            return
+        
+        if self._on_ready_processing or time_since_last_ready < 5:
+            return
+        
+        self._on_ready_processing = True
+        self._last_ready_time = current_time
+        
+        try:
+            try: servidor_principal = self.bot.get_guild(utils.obter_server_principal())
+            except: servidor_principal = None
+
+            print()
+            print(f"Conectado em {self.bot.user.name} | {self.bot.user.id}")
+            print(f"Servidores: {len(self.bot.guilds)}")
+            print(f"Usuários: {sum(len(guild.members) for guild in self.bot.guilds)}")
+            print(f"Servidor principal: {servidor_principal.name}") if servidor_principal else print("    [ ! ] Servidor principal: Não encontrado")
+            print(f"Latência: {round(self.bot.latency * 1000)}ms")
+
+            await core.change_status(self.bot)
+            await core.log_restart(self.bot)
+
+            # Sincronização de emojis em background (não bloqueia comandos)
+            if hasattr(self.bot, '_init_token') and hasattr(self.bot, '_init_app_id'):
+                asyncio.create_task(asyncio.to_thread(
+                    init_on_startup, self.bot._init_token, self.bot._init_app_id
+                ))
+
+            if not self._websocket_initialized:
+                self._websocket_initialized = True
+                asyncio.create_task(self._initialize_cloud_websocket())
+                asyncio.create_task(self._initialize_extensions_websocket())
+                # [PaymentWS] Desabilitado — bot usa apenas Amethys Wallet (sem WS de pagamentos externo)
+                # asyncio.create_task(self._initialize_payment_websocket())
+                # asyncio.create_task(self._initialize_marketplace_websocket())
+            
+            if not self._checked_pending_carts:
+                self._checked_pending_carts = True
+                asyncio.create_task(self._check_pending_carts())
+            
+            self._on_ready_once = True
+        finally:
+            await asyncio.sleep(1)
+            self._on_ready_processing = False
+
+    # ─── CLOUD WEBSOCKET ─────────────────────────────────────────────────────
+
+    async def _initialize_cloud_websocket(self):
+        """Inicializa e mantém o WebSocket do Cloud conectado"""
+        try:
+            await asyncio.sleep(1)
+            
+            from modules.cloud.update_api import set_bot_instance, get_websocket_manager, register_websocket_callbacks
+            set_bot_instance(self.bot)
+            
+            config = db.obter("configs/config_websocket.json")
+            websocket_config = config.get("websocket_cloud", {})
+            
+            ws_manager = get_websocket_manager()
+            ws_manager.set_bot(self.bot)
+            
+            register_websocket_callbacks()
+            
+            if ws_manager.is_connected():
+                asyncio.create_task(self._websocket_health_check())
+                return
+            
+            await ws_manager.start()
+            
+            for i in range(20):
+                await asyncio.sleep(0.5)
+                if ws_manager.is_connected():
+                    await ws_manager.resend_bot_connected()
+                    break
+            
+            asyncio.create_task(self._websocket_health_check())
+            
+        except Exception as e:
+            await asyncio.sleep(30)
+            asyncio.create_task(self._initialize_cloud_websocket())
+
+    async def _initialize_extensions_websocket(self):
+        """Inicializa e mantém o WebSocket de Extensões (Boost/Joiner) conectado"""
+        try:
+            await asyncio.sleep(2)
+            
+            from connections import initialize_extensions
+            
+            ws = await initialize_extensions(self.bot)
+            
+            if ws.is_connected():
+                print("[ExtensionsWS] ✅ WebSocket de Extensões conectado!")
+                return
+            
+            for _ in range(20):
+                await asyncio.sleep(0.5)
+                if ws.is_connected():
+                    print("[ExtensionsWS] ✅ WebSocket de Extensões conectado!")
+                    break
+            else:
+                print("[ExtensionsWS] ⚠️ Servidor de extensões indisponível, reconexão automática ativada.")
+            
+        except Exception as e:
+            print(f"[ExtensionsWS] ❌ Erro ao inicializar WebSocket de Extensões: {e}")
+            await asyncio.sleep(30)
+            asyncio.create_task(self._initialize_extensions_websocket())
+
+    async def _initialize_marketplace_websocket(self):
+        """Inicializa e mantém o WebSocket do Marketplace conectado"""
+        try:
+            await asyncio.sleep(2)
+
+            from connections import ws_bridge
+
+            ws_client = ws_bridge.get_ws_client()
+            if ws_client and ws_client.is_connected():
+                return
+
+            await ws_bridge.start(self.bot)
+
+            for _ in range(20):
+                await asyncio.sleep(0.5)
+                ws_client = ws_bridge.get_ws_client()
+                if ws_client and ws_client.is_connected():
+                    print("[MarketplaceWS] ✅ Conectado com sucesso!")
+                    break
+            else:
+                print("[MarketplaceWS] ⚠️ Conexão em andamento (background)")
+
+        except Exception as e:
+            print(f"[MarketplaceWS] ❌ Erro ao inicializar: {e}")
+            await asyncio.sleep(30)
+            asyncio.create_task(self._initialize_marketplace_websocket())
+
+    # ─── PAYMENT WEBSOCKET (desabilitado — bot usa apenas Amethys Wallet) ───────
+    # Para reativar: descomentar o corpo abaixo e a chamada em on_load()
+    #
+    # async def _initialize_payment_websocket(self):
+    #     """Inicializa e mantém o WebSocket de Pagamentos conectado"""
+    #     try:
+    #         import json
+    #         import os
+    #         try:
+    #             config_path = os.path.join(os.path.dirname(__file__), '..', 'configs', 'config_socket.json')
+    #             with open(config_path, 'r', encoding='utf-8') as f:
+    #                 socket_config = json.load(f)
+    #             use_websocket = socket_config.get('websocket', True)
+    #         except:
+    #             use_websocket = True
+    #
+    #         if not use_websocket:
+    #             print("[PaymentWS] ⚠️ WebSocket desabilitado (HTTP mode) - usando polling para pagamentos")
+    #             asyncio.create_task(self._payment_http_polling())
+    #             return
+    #
+    #         await asyncio.sleep(2)
+    #
+    #         from functions.payments.websocket_client import initialize_ws_client, start_ws_client, get_ws_client
+    #
+    #         ws_client = initialize_ws_client(self.bot)
+    #
+    #         bot_id = str(self.bot.user.id)
+    #         bot_token = self.bot.http.token
+    #
+    #         await start_ws_client(bot_id, bot_token)
+    #
+    #         for i in range(20):
+    #             await asyncio.sleep(0.5)
+    #             if ws_client.is_connected():
+    #                 print("[PaymentWS] ✅ Conectado à API de Pagamentos!")
+    #                 break
+    #         else:
+    #             print("[PaymentWS] ⚠️ Conexão em andamento (background)")
+    #
+    #         from modules.loja.cart.checkout import _handle_payment_approved
+    #
+    #         async def on_payment_approved(data):
+    #             try:
+    #                 payment_id = data.get('payment_id') or data.get('paymentId')
+    #                 cart_id = data.get('cart_id')
+    #
+    #                 print(f"[PaymentWS] 💰 Pagamento aprovado via webhook: {payment_id}")
+    #
+    #                 if not cart_id and payment_id:
+    #                     cart_id = await _find_cart_by_payment_id(payment_id)
+    #
+    #                 if cart_id:
+    #                     await _handle_payment_approved(cart_id, self.bot)
+    #                 else:
+    #                     print(f"[PaymentWS] ⚠️ Cart ID não encontrado para payment_id: {payment_id}")
+    #
+    #             except Exception as e:
+    #                 print(f"[PaymentWS] ❌ Erro ao processar pagamento aprovado: {e}")
+    #                 import traceback
+    #                 traceback.print_exc()
+    #
+    #         async def _find_cart_by_payment_id(payment_id: str) -> Optional[str]:
+    #             try:
+    #                 loja_data = db.get_document("loja_data")
+    #                 carts = loja_data.get("carts", {})
+    #
+    #                 for cart_id, cart in carts.items():
+    #                     if cart.get("status") != "pending":
+    #                         continue
+    #
+    #                     payment_data = cart.get("payment_data", {})
+    #
+    #                     provider_data = payment_data.get("provider", {})
+    #                     if provider_data:
+    #                         stored_ids = [
+    #                             provider_data.get("payment_id"),
+    #                             provider_data.get("correlation_id"),
+    #                             provider_data.get("charge_id"),
+    #                             provider_data.get("txid"),
+    #                         ]
+    #                         if payment_id in stored_ids:
+    #                             return cart_id
+    #
+    #                     payment_ids = payment_data.get("payment_ids", {})
+    #                     if payment_ids:
+    #                         if payment_id in list(payment_ids.values()):
+    #                             return cart_id
+    #
+    #                     raw_data = payment_data.get("raw", {}) or provider_data.get("raw_response", {})
+    #                     if raw_data:
+    #                         raw_ids = [
+    #                             raw_data.get("id"),
+    #                             raw_data.get("paymentId"),
+    #                             raw_data.get("payment_id"),
+    #                             raw_data.get("transactionId"),
+    #                             raw_data.get("txid"),
+    #                         ]
+    #                         if payment_id in raw_ids:
+    #                             return cart_id
+    #
+    #                 return None
+    #             except Exception as e:
+    #                 print(f"[PaymentWS] ❌ Erro ao buscar cart_id: {e}")
+    #                 return None
+    #
+    #         ws_client.set_payment_approved_callback(on_payment_approved)
+    #
+    #     except Exception as e:
+    #         print(f"[PaymentWS] ❌ Erro ao inicializar: {e}")
+    #         import traceback
+    #         traceback.print_exc()
+    #
+    #         await asyncio.sleep(30)
+    #         asyncio.create_task(self._initialize_payment_websocket())
+    
+    # async def _payment_http_polling(self):
+    #     """Polling HTTP para verificar status de pagamentos"""
+    #     import aiohttp
+    #
+    #     print("[PaymentWS-HTTP] 🔄 Iniciando polling HTTP para pagamentos...")
+    #
+    #     poll_interval = 10
+    #
+    #     config_api = db.obter("configs/config_api.json") or {}
+    #     api_url = config_api.get("api", "localhost:22222")
+    #     if not api_url.startswith("http"):
+    #         api_url = f"http://{api_url}"
+    #
+    #     print(f"[PaymentWS-HTTP] 🌐 API URL: {api_url}")
+    #
+    #     while True:
+    #         try:
+    #             await asyncio.sleep(poll_interval)
+    #
+    #             loja_data = db.get_document("loja_data")
+    #             carts = loja_data.get("carts", {})
+    #
+    #             pending_payments = []
+    #             for cart_id, cart in carts.items():
+    #                 if cart.get("status") == "pending":
+    #                     payment_data = cart.get("payment_data", {})
+    #                     provider_data = payment_data.get("provider", {})
+    #                     payment_id = (
+    #                         provider_data.get("payment_id") or
+    #                         provider_data.get("correlation_id") or
+    #                         provider_data.get("charge_id") or
+    #                         provider_data.get("txid")
+    #                     )
+    #                     if payment_id:
+    #                         pending_payments.append({
+    #                             "cart_id": cart_id,
+    #                             "payment_id": payment_id,
+    #                             "payment_method": cart.get("payment_method")
+    #                         })
+    #
+    #             for payment in pending_payments:
+    #                 try:
+    #                     async with aiohttp.ClientSession() as session:
+    #                         async with session.get(
+    #                             f"{api_url}/api/payment/status",
+    #                             params={"payment_id": payment["payment_id"]},
+    #                             timeout=aiohttp.ClientTimeout(total=10)
+    #                         ) as resp:
+    #                             if resp.status == 200:
+    #                                 data = await resp.json()
+    #                                 if data.get("status") == "approved":
+    #                                     print(f"[PaymentWS-HTTP] 💰 Pagamento aprovado: {payment['payment_id']}")
+    #                                     from modules.loja.cart.checkout import _handle_payment_approved
+    #                                     await _handle_payment_approved(payment["cart_id"], self.bot)
+    #                 except Exception:
+    #                     pass
+    #
+    #         except Exception as e:
+    #             print(f"[PaymentWS-HTTP] ❌ Erro no polling: {e}")
+    #             await asyncio.sleep(30)
+
+    async def _websocket_health_check(self):
+        """Verifica periodicamente o status da conexão WebSocket e reconecta se necessário"""
+        try:
+            from modules.cloud.update_api import get_websocket_manager, register_websocket_callbacks
+            
+            check_interval = 30
+            consecutive_failures = 0
+            max_consecutive_failures = 3
+            
+            while True:
+                await asyncio.sleep(check_interval)
+                
+                try:
+                    ws_manager = get_websocket_manager()
+                    
+                    if not ws_manager.is_connected():
+                        consecutive_failures += 1
+                        
+                        if consecutive_failures >= max_consecutive_failures:
+                            try:
+                                await ws_manager.stop()
+                                await asyncio.sleep(2)
+                            except:
+                                pass
+                            
+                            register_websocket_callbacks()
+                            await ws_manager.start()
+                            await asyncio.sleep(3)
+                            
+                            if ws_manager.is_connected():
+                                consecutive_failures = 0
+                    else:
+                        consecutive_failures = 0
+                            
+                except Exception:
+                    consecutive_failures += 1
+                    
+        except Exception:
+            pass
+
+    async def _check_pending_carts(self):
+        """Verifica todos os carrinhos pendentes e reinicia monitoramento"""
+        try:
+            await asyncio.sleep(2)
+            
+            loja_data = db.get_document("loja_data")
+            carts = loja_data.get("carts", {})
+            
+            pending_count = 0
+            approved_count = 0
+            failed_count = 0
+            
+            for cart_id, cart in carts.items():
+                status = cart.get("status", "cart")
+                
+                if status == "pending":
+                    payment_data = cart.get("payment_data", {})
+                    
+                    if payment_data:
+                        provider_data = payment_data.get("provider", {})
+                        payment_provider = provider_data.get("name") or payment_data.get("payment_provider")
+                        
+                        payment_id = None
+                        if provider_data:
+                            payment_id = (
+                                provider_data.get("payment_id") or 
+                                provider_data.get("correlation_id") or
+                                provider_data.get("charge_id") or
+                                provider_data.get("txid")
+                            )
+                        
+                        if not payment_id:
+                            payment_ids = payment_data.get("payment_ids", {})
+                            if payment_ids:
+                                payment_id = (
+                                    payment_ids.get("payment_id") or
+                                    payment_ids.get("id") or
+                                    payment_ids.get("txid") or
+                                    payment_ids.get("payment_intent")
+                                )
+                        
+                        if not payment_id:
+                            raw_data = payment_data.get("raw", {}) or provider_data.get("raw_response", {})
+                            if raw_data:
+                                payment_id = (
+                                    raw_data.get("transactionId") or
+                                    raw_data.get("paymentId") or
+                                    raw_data.get("payment_id") or
+                                    raw_data.get("id") or
+                                    raw_data.get("txid") or
+                                    raw_data.get("externalId")
+                                )
+                        
+                        payment_method = cart.get("payment_method")
+                        is_free_purchase = cart.get("is_free_purchase", False)
+                        
+                        if payment_id and not is_free_purchase and payment_method:
+                            try:
+                                from modules.loja.cart.checkout import _check_single_payment_status, _handle_payment_approved
+                                
+                                is_finished, final_status = await _check_single_payment_status(
+                                    cart_id=cart_id,
+                                    payment_id=payment_id,
+                                    payment_method=payment_method,
+                                    payment_provider=payment_provider,
+                                    bot=self.bot
+                                )
+                                
+                                if is_finished:
+                                    if final_status == "approved":
+                                        print(f"[Cart Monitor] ✅ Pagamento aprovado para carrinho {cart_id}, processando...")
+                                        await _handle_payment_approved(cart_id, self.bot)
+                                        approved_count += 1
+                                    else:
+                                        print(f"[Cart Monitor] ❌ Pagamento falhou para carrinho {cart_id}: {final_status}")
+                                        cart["status"] = final_status
+                                        cart["updated_at"] = int(datetime.utcnow().timestamp())
+                                        loja_data["carts"][cart_id] = cart
+                                        db.save_document("loja_data", loja_data)
+                                        failed_count += 1
+                                else:
+                                    print(f"[Cart Monitor] ⏳ Pagamento ainda pendente para carrinho {cart_id}, reiniciando monitoramento...")
+                                    
+                                    from modules.loja.cart.checkout import _extract_payment_ids
+                                    payment_ids_dict = {}
+                                    raw_data = payment_data.get("raw", {}) or provider_data.get("raw_response", {})
+                                    if provider_data:
+                                        if provider_data.get("payment_id"):
+                                            payment_ids_dict["payment_id"] = provider_data.get("payment_id")
+                                        if provider_data.get("correlation_id"):
+                                            payment_ids_dict["correlationID"] = provider_data.get("correlation_id")
+                                        if provider_data.get("charge_id"):
+                                            payment_ids_dict["charge_id"] = provider_data.get("charge_id")
+                                        if provider_data.get("txid"):
+                                            payment_ids_dict["txid"] = provider_data.get("txid")
+                                    
+                                    if not payment_ids_dict and raw_data:
+                                        payment_ids_dict = _extract_payment_ids(raw_data)
+                                    
+                                    if payment_ids_dict:
+                                        from modules.loja.cart.checkout import _monitor_payment
+                                        asyncio.create_task(_monitor_payment(cart_id, payment_method, payment_ids_dict, payment_provider, self.bot))
+                                        pending_count += 1
+                                    
+                            except Exception as e:
+                                print(f"[Cart Monitor] Erro ao verificar carrinho {cart_id}: {e}")
+                                import traceback
+                                traceback.print_exc()
+                                
+                                try:
+                                    from modules.loja.cart.checkout import _extract_payment_ids, _monitor_payment
+                                    raw_data = payment_data.get("raw", {}) or provider_data.get("raw_response", {})
+                                    payment_ids_dict = _extract_payment_ids(raw_data) if raw_data else {}
+                                    if payment_ids_dict:
+                                        asyncio.create_task(_monitor_payment(cart_id, payment_method, payment_ids_dict, payment_provider, self.bot))
+                                        pending_count += 1
+                                except:
+                                    pass
+                                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
+
+def setup(bot: commands.Bot):
+    bot.add_cog(OnLoad(bot))

@@ -1,0 +1,40 @@
+import express from "express";
+import authMiddleware from "../../middlewares/authMiddleware.js";
+import listRoute from "./list.js";
+import infoRoute from "./info.js";
+import singleRoute from "./single.js";
+import manageRoute from "./manage.js";
+import updateBotRoute from "./updateBot.js";
+import getTokenRoute from "./getToken.js";
+import inviteLinkRoute from "./inviteLink.js";
+import discordInfoRoute from "./discordInfo.js";
+import botProfileRoute from "./botProfile.js";
+import customizationRoute from "./customization.js";
+import getExpiringApps from "./expiring.js";
+import recoverApplication from "./recover.js";
+import transferOwnerRoute from "./transferOwner.js";
+import freeRoute from "./free.js";
+import filesRoute from "./files.js";
+import settingsRoute from "./settings.js";
+
+const router = express.Router();
+router.use(authMiddleware);
+
+router.use("/", listRoute);
+router.use("/", infoRoute);
+router.use("/", singleRoute);
+router.use("/", manageRoute);
+router.use("/", updateBotRoute);
+router.use("/", getTokenRoute);
+router.use("/", inviteLinkRoute);
+router.use("/", discordInfoRoute);
+router.use("/", botProfileRoute);
+router.use("/", customizationRoute);
+router.use("/", transferOwnerRoute);
+router.use("/", freeRoute);
+router.use("/", filesRoute);
+router.use("/", settingsRoute);
+router.get("/expiring", getExpiringApps);
+router.post("/recover/:id", recoverApplication);
+
+export default router;

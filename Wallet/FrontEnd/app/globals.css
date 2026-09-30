@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Tema roxo para Amethys Wallet */
+  --background: #08090A;
+  --foreground: #FAFAFA;
+  --card: #0F1011;
+  --card-foreground: #FAFAFA;
+  --popover: #0F1011;
+  --popover-foreground: #FAFAFA;
+  --primary: #8B5CF6;
+  --primary-foreground: #FAFAFA;
+  --secondary: #1A1B1E;
+  --secondary-foreground: #FAFAFA;
+  --muted: #2A2B2E;
+  --muted-foreground: #A0A0A0;
+  --accent: #8B5CF6;
+  --accent-foreground: #FAFAFA;
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  --border: #2A2B2E;
+  --input: #1A1B1E;
+  --ring: #8B5CF6;
+  --chart-1: #10B981;
+  --chart-2: #3B82F6;
+  --chart-3: #8B5CF6;
+  --chart-4: #F59E0B;
+  --chart-5: #EC4899;
+  --radius: 0.75rem;
+  --sidebar: #08090A;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #1A1B1E;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: #2A2B2E;
+  --sidebar-ring: #8B5CF6;
+}
+
+.dark {
+  /* Modo escuro mantém tema roxo */
+  --background: #08090A;
+  --foreground: #FAFAFA;
+  --card: #0F1011;
+  --card-foreground: #FAFAFA;
+  --popover: #0F1011;
+  --popover-foreground: #FAFAFA;
+  --primary: #8B5CF6;
+  --primary-foreground: #FAFAFA;
+  --secondary: #1A1B1E;
+  --secondary-foreground: #FAFAFA;
+  --muted: #2A2B2E;
+  --muted-foreground: #A0A0A0;
+  --accent: #8B5CF6;
+  --accent-foreground: #FAFAFA;
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  --border: #2A2B2E;
+  --input: #1A1B1E;
+  --ring: #8B5CF6;
+  --chart-1: #10B981;
+  --chart-2: #3B82F6;
+  --chart-3: #8B5CF6;
+  --chart-4: #F59E0B;
+  --chart-5: #EC4899;
+  --sidebar: #08090A;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #1A1B1E;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: #2A2B2E;
+  --sidebar-ring: #8B5CF6;
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar to match dark theme */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Dashboard preview 3D effect - only on desktop */
+  .dashboard-preview-3d {
+    transform-style: preserve-3d;
+  }
+
+  @media (min-width: 768px) {
+    .dashboard-preview-3d {
+      transform: perspective(1000px) rotateX(5deg);
+    }
+  }
+
+  /* Hide scrollbar on dashboard pages */
+  [data-dashboard] {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  [data-dashboard]::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -1,0 +1,27 @@
+# Segredos e arquivos de ambiente
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Configurações privadas e dados gerados
+Bot/configs/*.json
+Bot/config.json
+Bot/database/
+Bot/backup/
+Api/src/temp/
+Api/src/database/cert/
+Api/src/database/logs/
+Api/src/database/zip/
+Api-Cloud/data/
+Wallet/BackEnd/database/
+
+# Dependências e artefatos de build
+**/node_modules/
+**/.next/
+**/__pycache__/
+*.py[cod]
+*.tsbuildinfo
+.DS_Store

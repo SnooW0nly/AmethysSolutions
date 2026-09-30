@@ -1,0 +1,22 @@
+from disnake.ext import commands
+
+def setup(bot: commands.Bot):
+    #bot.load_extension("events.interaction_monitor")  
+    bot.load_extension("events.on_member_ban")
+    bot.load_extension("events.on_member_join")
+    bot.load_extension("events.on_member_remove")
+    bot.load_extension("events.on_member_update_roles")
+    bot.load_extension("events.on_member_update_permissions")
+    bot.load_extension("events.on_member_update_timeout")
+    bot.load_extension("events.on_guild_channel_create")
+    bot.load_extension("events.on_guild_channel_delete")
+    bot.load_extension("events.on_guild_channel_update")
+    bot.load_extension("events.on_guild_role_create")
+    bot.load_extension("events.on_guild_role_delete")
+    bot.load_extension("events.on_message_delete")
+    bot.load_extension("events.on_message_edit")
+    bot.load_extension("events.on_voice_state_update")
+    bot.load_extension("events.on_command")
+    bot.load_extension("events.on_ready")
+    bot.load_extension("events.websocket_ready")
+    #bot.load_extension("events.boost_websocket_ready")
